@@ -20,12 +20,14 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
       <input type="hidden" name="repo" value={checkout.hiddenFields?.repo || ''} />
       <input type="hidden" name="template" value={checkout.hiddenFields?.template || 'webjuice-restaurant'} />
       <input type="hidden" name="preview_url" value={checkout.hiddenFields?.preview_url || ''} />
+      <input type="hidden" name="order_id" value="" />
 
       <label>
         Package
         <select name="tier" required>
           <option value="one_time">$399 one-time website with 3 revisions</option>
           <option value="yearly_maintenance">$799/year website with monthly maintenance</option>
+          <option value="extra_revision">$100 extra revision</option>
         </select>
       </label>
 
@@ -60,7 +62,9 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
   const form = document.querySelector('[data-checkout-form]');
   const status = document.querySelector('[data-status]');
   const tier = params.get('tier');
+  const orderId = params.get('order_id') || params.get('session_id') || '';
   if (tier && form?.elements?.tier) form.elements.tier.value = tier;
+  if (orderId && form?.elements?.order_id) form.elements.order_id.value = orderId;
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();

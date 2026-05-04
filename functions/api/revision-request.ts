@@ -1,9 +1,12 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { sendCustomerEmail } from './_email';
 
 interface Env {
   REVISE_DISCORD_WEBHOOK_URL?: string;
   DISCORD_WEBHOOK_URL?: string;
   AGENT_WEBHOOK_URL?: string;
+  RESEND_API_KEY?: string;
+  FROM_EMAIL?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -34,6 +37,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const webhookUrl = context.env.REVISE_DISCORD_WEBHOOK_URL || context.env.DISCORD_WEBHOOK_URL;
     if (webhookUrl) context.waitUntil(sendJson(webhookUrl, buildDiscordPayload(payload.fields)));
+    context.waitUntil(sendCustomerEmail(context.env, buildRevisionReceivedEmail(payload.fields)));
     if (context.env.AGENT_WEBHOOK_URL) context.waitUntil(sendJson(context.env.AGENT_WEBHOOK_URL, payload));
 
     return json({ success: true, clientSlug: payload.fields.client_slug, repo: payload.fields.repo });
@@ -68,6 +72,22 @@ function buildDiscordPayload(fields: Record<string, string>) {
   };
 }
 
+function buildRevisionReceivedEmail(fields: Record<string, string>) {
+  return {
+    to: fields.email,
+    subject: 'Revision request received',
+    text: [
+      'We received your revision request.',
+      '',
+      `Order ID: ${fields.order_id}`,
+      `Preview: ${fields.preview_url || 'N/A'}`,
+      '',
+      'Next, we match your Order ID and checkout email against your active order. If revision quota remains, a dev preview task will be created.',
+    ].join('\n'),
+    html: `<p>We received your revision request.</p><ul><li>Order ID: ${escapeHtml(fields.order_id)}</li><li>Preview: ${escapeHtml(fields.preview_url || 'N/A')}</li></ul><p>Next, we match your Order ID and checkout email against your active order. If revision quota remains, a dev preview task will be created.</p>`,
+  };
+}
+
 function field(name: string, value: string, inline = false, limit = 250) {
   const normalized = String(value || '').trim();
   if (!normalized || normalized === 'unknown') return null;
@@ -91,4 +111,14 @@ function json(data: unknown, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char] || char));
 }

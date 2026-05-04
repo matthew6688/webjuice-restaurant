@@ -39,6 +39,7 @@ const checkout = loadCheckoutArtifact();
       </label>
 
       <button type="submit">Submit revision request</button>
+      <a class="extra-link" data-extra-link>Buy extra revision - $100</a>
       <p class="status" data-status></p>
     </form>
   </section>
@@ -54,6 +55,14 @@ const checkout = loadCheckoutArtifact();
   };
   for (const [name, value] of Object.entries(prefill)) {
     if (value && form?.elements?.[name]) form.elements[name].value = value;
+  }
+  const extraLink = document.querySelector('[data-extra-link]');
+  if (extraLink) {
+    const checkout = new URL('/checkout', window.location.origin);
+    checkout.searchParams.set('tier', 'extra_revision');
+    if (prefill.order_id) checkout.searchParams.set('order_id', prefill.order_id);
+    if (prefill.email) checkout.searchParams.set('email', prefill.email);
+    extraLink.href = checkout.toString();
   }
 
   form?.addEventListener('submit', async (event) => {
@@ -148,6 +157,14 @@ const checkout = loadCheckoutArtifact();
     color: white;
     font-weight: 950;
     cursor: pointer;
+  }
+
+  .extra-link {
+    grid-column: 1 / -1;
+    color: #17120e;
+    font-weight: 900;
+    text-align: center;
+    text-underline-offset: 4px;
   }
 
   .status {

@@ -1,9 +1,12 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { sendCustomerEmail } from './_email';
 
 interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
   SALES_DISCORD_WEBHOOK_URL?: string;
   AGENT_WEBHOOK_URL?: string;
+  RESEND_API_KEY?: string;
+  FROM_EMAIL?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -27,6 +30,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (context.env.SALES_DISCORD_WEBHOOK_URL) {
     context.waitUntil(sendJson(context.env.SALES_DISCORD_WEBHOOK_URL, discordPayload));
+  }
+  if (order.email !== 'N/A') {
+    context.waitUntil(sendCustomerEmail(context.env, buildPaymentEmail(order)));
   }
   if (context.env.AGENT_WEBHOOK_URL) {
     context.waitUntil(sendJson(context.env.AGENT_WEBHOOK_URL, { provider: 'stripe', event, order }));
@@ -59,6 +65,31 @@ async function verifyStripeSignature(rawBody: string, header: string, secret: st
   );
   const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedPayload));
   return timingSafeEqual(hex(digest), signature);
+}
+
+function buildPaymentEmail(order: ReturnType<typeof normalizeCheckoutSession>) {
+  const revisionUrl = order.previewUrl
+    ? `${order.previewUrl}/revise?order_id=${encodeURIComponent(order.orderId)}&email=${encodeURIComponent(order.email)}`
+    : '';
+  const lines = [
+    `Order ID: ${order.orderId}`,
+    `Package: ${order.tier}`,
+    `Amount: ${order.currency} ${order.amount}`,
+    `Preview: ${order.previewUrl || 'N/A'}`,
+    `Revision request form: ${revisionUrl || 'N/A'}`,
+  ];
+  return {
+    to: order.email,
+    subject: `Payment received for ${order.company}`,
+    text: [
+      'Thanks for your payment. We received your website order.',
+      '',
+      ...lines,
+      '',
+      'Keep your Order ID. Future revision requests must match this Order ID and the checkout email.',
+    ].join('\n'),
+    html: `<p>Thanks for your payment. We received your website order.</p><ul>${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul><p>Keep your Order ID. Future revision requests must match this Order ID and the checkout email.</p>`,
+  };
 }
 
 function normalizeCheckoutSession(event: any) {
@@ -122,6 +153,16 @@ function json(data: unknown, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char] || char));
 }
 
 function hex(buffer: ArrayBuffer) {

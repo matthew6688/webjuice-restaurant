@@ -4,16 +4,15 @@ interface Env {
   STRIPE_SECRET_KEY?: string;
   STRIPE_PRICE_ONE_TIME?: string;
   STRIPE_PRICE_YEARLY?: string;
+  STRIPE_PRICE_EXTRA_REVISION?: string;
   SALES_DISCORD_WEBHOOK_URL?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const body = await context.request.json() as Record<string, string>;
-    const tier = body.tier === 'yearly_maintenance' ? 'yearly_maintenance' : 'one_time';
-    const priceId = tier === 'yearly_maintenance'
-      ? context.env.STRIPE_PRICE_YEARLY
-      : context.env.STRIPE_PRICE_ONE_TIME;
+    const tier = normalizeTier(body.tier);
+    const priceId = priceForTier(context.env, tier);
 
     if (!context.env.STRIPE_SECRET_KEY || !priceId) {
       return json({ error: 'Stripe is not configured for this preview.' }, 503);
@@ -30,6 +29,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       business_name: body.business_name || '',
       preferred_domain: body.preferred_domain || '',
       launch_notes: body.launch_notes || '',
+      parent_order_id: body.order_id || '',
     };
 
     const params = new URLSearchParams();
@@ -98,6 +98,18 @@ async function sendCheckoutStarted(url: string, metadata: Record<string, string>
       }],
     }),
   });
+}
+
+function normalizeTier(value?: string) {
+  if (value === 'yearly_maintenance') return 'yearly_maintenance';
+  if (value === 'extra_revision') return 'extra_revision';
+  return 'one_time';
+}
+
+function priceForTier(env: Env, tier: string) {
+  if (tier === 'yearly_maintenance') return env.STRIPE_PRICE_YEARLY;
+  if (tier === 'extra_revision') return env.STRIPE_PRICE_EXTRA_REVISION;
+  return env.STRIPE_PRICE_ONE_TIME;
 }
 
 function json(data: unknown, status = 200) {
