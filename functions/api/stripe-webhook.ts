@@ -1,10 +1,15 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { dispatchFunnelEvent } from './_agent-dispatch';
 import { sendCustomerEmail } from './_email';
 
 interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
   SALES_DISCORD_WEBHOOK_URL?: string;
   AGENT_WEBHOOK_URL?: string;
+  AGENT_GITHUB_TOKEN?: string;
+  AGENT_REPO?: string;
+  AGENT_WORKFLOW_ID?: string;
+  AGENT_REF?: string;
   RESEND_API_KEY?: string;
   FROM_EMAIL?: string;
 }
@@ -34,9 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (order.email !== 'N/A') {
     context.waitUntil(sendCustomerEmail(context.env, buildPaymentEmail(order)));
   }
-  if (context.env.AGENT_WEBHOOK_URL) {
-    context.waitUntil(sendJson(context.env.AGENT_WEBHOOK_URL, { provider: 'stripe', event, order }));
-  }
+  context.waitUntil(dispatchFunnelEvent(context.env, { provider: 'stripe', payload: event }));
 
   return json({ received: true, orderId: order.orderId, clientSlug: order.clientSlug, repo: order.repo });
 };

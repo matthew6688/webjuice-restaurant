@@ -1,10 +1,15 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { dispatchFunnelEvent } from './_agent-dispatch';
 import { sendCustomerEmail } from './_email';
 
 interface Env {
   REVISE_DISCORD_WEBHOOK_URL?: string;
   DISCORD_WEBHOOK_URL?: string;
   AGENT_WEBHOOK_URL?: string;
+  AGENT_GITHUB_TOKEN?: string;
+  AGENT_REPO?: string;
+  AGENT_WORKFLOW_ID?: string;
+  AGENT_REF?: string;
   RESEND_API_KEY?: string;
   FROM_EMAIL?: string;
 }
@@ -38,7 +43,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const webhookUrl = context.env.REVISE_DISCORD_WEBHOOK_URL || context.env.DISCORD_WEBHOOK_URL;
     if (webhookUrl) context.waitUntil(sendJson(webhookUrl, buildDiscordPayload(payload.fields)));
     context.waitUntil(sendCustomerEmail(context.env, buildRevisionReceivedEmail(payload.fields)));
-    if (context.env.AGENT_WEBHOOK_URL) context.waitUntil(sendJson(context.env.AGENT_WEBHOOK_URL, payload));
+    context.waitUntil(dispatchFunnelEvent(context.env, { provider: 'tally', payload }));
 
     return json({ success: true, clientSlug: payload.fields.client_slug, repo: payload.fields.repo });
   } catch (error) {
