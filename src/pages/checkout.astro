@@ -1,0 +1,171 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
+
+const content = loadRestaurantContent();
+const checkout = loadCheckoutArtifact();
+const tiers = checkout.tiers || [];
+const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || { id: 'one_time', amount: 399 };
+const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { id: 'yearly_maintenance', amount: 799 };
+---
+
+<Layout title={`Checkout - ${content.hero.name}`} description="Claim this website preview">
+  <section class="checkout-shell">
+    <p class="eyebrow">Claim this site</p>
+    <h1>{content.hero.name}</h1>
+    <p class="lede">Secure the preview, tell us your preferred domain, and send launch notes. Payment opens in Stripe Checkout.</p>
+
+    <form class="checkout-form" data-checkout-form>
+      <input type="hidden" name="client_slug" value={checkout.hiddenFields?.client_slug || checkout.clientSlug || ''} />
+      <input type="hidden" name="repo" value={checkout.hiddenFields?.repo || ''} />
+      <input type="hidden" name="template" value={checkout.hiddenFields?.template || 'webjuice-restaurant'} />
+      <input type="hidden" name="preview_url" value={checkout.hiddenFields?.preview_url || ''} />
+
+      <label>
+        Package
+        <select name="tier" required>
+          <option value="one_time">$399 one-time website with 3 revisions</option>
+          <option value="yearly_maintenance">$799/year website with monthly maintenance</option>
+        </select>
+      </label>
+
+      <label>
+        Business name
+        <input name="business_name" required value={content.hero.name} />
+      </label>
+
+      <label>
+        Email
+        <input name="email" type="email" required placeholder="owner@example.com" />
+      </label>
+
+      <label>
+        Preferred domain or subdomain
+        <input name="preferred_domain" placeholder="yourbusiness.com or menu.yourbusiness.com" />
+      </label>
+
+      <label class="wide">
+        Launch notes or requested changes
+        <textarea name="launch_notes" rows="5" placeholder="Menu edits, photos, logo notes, domain notes, or anything to fix before launch."></textarea>
+      </label>
+
+      <button type="submit">Continue to secure payment</button>
+      <p class="status" data-status></p>
+    </form>
+  </section>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const form = document.querySelector('[data-checkout-form]');
+  const status = document.querySelector('[data-status]');
+  const tier = params.get('tier');
+  if (tier && form?.elements?.tier) form.elements.tier.value = tier;
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    status.textContent = 'Opening secure checkout...';
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.url) {
+      status.textContent = data.error || 'Checkout is not configured yet.';
+      return;
+    }
+    window.location.href = data.url;
+  });
+</script>
+
+<style>
+  .checkout-shell {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  .eyebrow {
+    color: #b9802f;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin-top: 0.8rem;
+    color: #17120e;
+    font-size: clamp(3rem, 8vw, 6.2rem);
+    font-weight: 950;
+    line-height: 0.9;
+  }
+
+  .lede {
+    max-width: 660px;
+    margin-top: 1.2rem;
+    color: #665d55;
+    font-size: 1.08rem;
+    line-height: 1.75;
+  }
+
+  .checkout-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+    border: 1px solid #ddd6cc;
+    padding: clamp(1rem, 3vw, 2rem);
+    background: white;
+  }
+
+  label {
+    display: grid;
+    gap: 0.45rem;
+    color: #17120e;
+    font-weight: 900;
+  }
+
+  .wide,
+  button,
+  .status {
+    grid-column: 1 / -1;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    border: 1px solid #ddd6cc;
+    border-radius: 4px;
+    padding: 0.82rem 0.9rem;
+    color: #17120e;
+    font: inherit;
+    font-weight: 600;
+  }
+
+  button {
+    min-height: 52px;
+    border: 0;
+    border-radius: 4px;
+    background: #b9802f;
+    color: white;
+    font-weight: 950;
+    cursor: pointer;
+  }
+
+  .status {
+    margin: 0;
+    color: #665d55;
+    font-weight: 800;
+  }
+
+  @media (max-width: 720px) {
+    .checkout-form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
