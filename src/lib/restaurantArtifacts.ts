@@ -4,6 +4,7 @@ import { siteConfig } from '../config/site';
 
 const CONTENT_PATH = process.env.WEBJUICE_CONTENT_PATH || 'src/data/content.restaurant.json';
 const DESIGN_PATH = process.env.WEBJUICE_DESIGN_PATH || 'src/data/design.restaurant.json';
+const CHECKOUT_PATH = process.env.WEBJUICE_CHECKOUT_PATH || 'src/data/checkout.json';
 
 export function loadRestaurantContent() {
   const content = readJson(CONTENT_PATH) || fallbackContent();
@@ -26,6 +27,13 @@ export function loadRestaurantDesign() {
       },
     },
     directions: [],
+  };
+}
+
+export function loadCheckoutArtifact() {
+  return readJson(CHECKOUT_PATH) || {
+    tiers: [],
+    feedbackUrl: '',
   };
 }
 

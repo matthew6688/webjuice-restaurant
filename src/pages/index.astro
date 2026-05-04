@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import {
   firstImage,
+  loadCheckoutArtifact,
   loadRestaurantContent,
   loadRestaurantDesign,
   paletteVars,
@@ -10,6 +11,7 @@ import {
 
 const content = loadRestaurantContent();
 const design = loadRestaurantDesign();
+const checkout = loadCheckoutArtifact();
 const styles = paletteVars(design);
 const heroImage = firstImage(content);
 const supportImages = supportingImages(content);
@@ -17,6 +19,7 @@ const sections = content.menu?.sections || [];
 const featuredItems = sections.flatMap((section: any) => section.items || []).slice(0, 6);
 const hasMenu = sections.length > 0;
 const logo = content.brand?.logo || '';
+const checkoutTiers = checkout.tiers || [];
 ---
 
 <Layout title={content.hero.name + ' Menu & Dining'} description={content.hero.tagline} brandName={content.hero.name}>
@@ -67,7 +70,7 @@ const logo = content.brand?.logo || '';
     </div>
   </section>
 
-  <section class="menu-preview">
+  <section class="menu-preview" style={styles}>
     <div class="section-heading">
       <div>
         <p>Signature picks</p>
@@ -93,6 +96,32 @@ const logo = content.brand?.logo || '';
       )}
     </div>
   </section>
+
+  {checkoutTiers.length > 0 && (
+    <section class="checkout-band" style={styles}>
+      <div class="section-heading checkout-heading">
+        <div>
+          <p>Launch this preview</p>
+          <h2>Choose a website package</h2>
+        </div>
+        {checkout.feedbackUrl && <a href={checkout.feedbackUrl}>Send feedback</a>}
+      </div>
+      <div class="checkout-grid">
+        {checkoutTiers.map((tier: any) => (
+          <article class="checkout-card">
+            <div>
+              <h3>{tier.label || tier.id}</h3>
+              {tier.description && <p>{tier.description}</p>}
+            </div>
+            <div class="checkout-action">
+              <strong>${tier.amount}</strong>
+              <a href={tier.purchaseUrl}>Buy now</a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
 </Layout>
 
 <style>
@@ -312,6 +341,67 @@ const logo = content.brand?.logo || '';
     display: block;
   }
 
+  .checkout-band {
+    border-top: 1px solid #ded8cf;
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+  }
+
+  .checkout-heading {
+    align-items: start;
+  }
+
+  .checkout-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .checkout-card {
+    display: grid;
+    gap: 1.25rem;
+    border: 1px solid #ded8cf;
+    border-radius: 8px;
+    padding: 1.35rem;
+    background: var(--wj-ink);
+    color: white;
+  }
+
+  .checkout-card h3 {
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+
+  .checkout-card p {
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, white, var(--wj-muted) 25%);
+    line-height: 1.55;
+  }
+
+  .checkout-action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .checkout-action strong {
+    font-size: 2rem;
+    font-weight: 900;
+  }
+
+  .checkout-action a {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.75rem 1.2rem;
+    background: var(--wj-accent);
+    color: white;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
   @media (min-width: 820px) {
     .hero-grid {
       grid-template-columns: 1fr 0.86fr;
@@ -323,6 +413,10 @@ const logo = content.brand?.logo || '';
 
     .menu-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .checkout-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>
