@@ -37,12 +37,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     params.set('line_items[0][price]', priceId);
     params.set('line_items[0][quantity]', '1');
     params.set('customer_email', body.email || '');
+    params.set('client_reference_id', metadata.client_slug);
     params.set('success_url', `${origin}/thank-you?session_id={CHECKOUT_SESSION_ID}&client_slug=${encodeURIComponent(metadata.client_slug)}&repo=${encodeURIComponent(metadata.repo)}&preview_url=${encodeURIComponent(metadata.preview_url)}&tier=${encodeURIComponent(tier)}&domain=${encodeURIComponent(metadata.preferred_domain)}&email=${encodeURIComponent(metadata.email)}`);
     params.set('cancel_url', `${origin}/checkout?tier=${encodeURIComponent(tier)}&client_slug=${encodeURIComponent(metadata.client_slug)}&repo=${encodeURIComponent(metadata.repo)}&preview_url=${encodeURIComponent(metadata.preview_url)}`);
     params.set('allow_promotion_codes', 'true');
 
     for (const [key, value] of Object.entries(metadata)) {
       if (value) params.set(`metadata[${key}]`, value);
+      if (value && tier === 'one_time') params.set(`payment_intent_data[metadata][${key}]`, value);
+      if (value && tier === 'yearly_maintenance') params.set(`subscription_data[metadata][${key}]`, value);
     }
 
     const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
