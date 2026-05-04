@@ -8,6 +8,7 @@ interface Props {
   description?: string;
   brandName?: string;
   showSalesBar?: boolean;
+  showChrome?: boolean;
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   description = siteConfig.description,
   brandName = siteConfig.name,
   showSalesBar = true,
+  showChrome = true,
 } = Astro.props;
 ---
 
@@ -27,26 +29,30 @@ const {
   <title>{title}</title>
 </head>
 <body class="bg-[#fbfaf7] text-gray-900 antialiased">
-  <nav class="border-b border-black/5 bg-[#fbfaf7]/90 backdrop-blur">
-    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-      <a href="/" class="max-w-[14rem] text-lg font-black leading-tight tracking-tight sm:text-xl">{brandName}</a>
-      <div class="flex gap-5 text-sm font-semibold sm:gap-7">
-        {siteConfig.navLinks.map(link => (
-          <a href={link.href} class="hover:text-gray-600">{link.label}</a>
-        ))}
+  {showChrome && (
+    <nav class="border-b border-black/5 bg-[#fbfaf7]/90 backdrop-blur">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <a href="/" class="max-w-[14rem] text-lg font-black leading-tight tracking-tight sm:text-xl">{brandName}</a>
+        <div class="flex gap-5 text-sm font-semibold sm:gap-7">
+          {siteConfig.navLinks.map(link => (
+            <a href={link.href} class="hover:text-gray-600">{link.label}</a>
+          ))}
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+  )}
   
   <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 md:py-12">
     <slot />
   </main>
   
-  <footer class="mt-20 border-t border-black/5">
-    <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500 sm:px-6">
-      &copy; {new Date().getFullYear()} {brandName}. {siteConfig.footer.text}
-    </div>
-  </footer>
+  {showChrome && (
+    <footer class="mt-20 border-t border-black/5">
+      <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500 sm:px-6">
+        &copy; {new Date().getFullYear()} {brandName}. {siteConfig.footer.text}
+      </div>
+    </footer>
+  )}
   {showSalesBar && <PreviewSalesBar />}
 </body>
 </html>
