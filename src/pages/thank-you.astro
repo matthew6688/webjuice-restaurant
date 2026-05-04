@@ -1,21 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { siteConfig } from '../config/site';
-
-const clientSlug = Astro.url.searchParams.get('client_slug') || '';
-const repo = Astro.url.searchParams.get('repo') || '';
-const previewUrl = Astro.url.searchParams.get('preview_url') || (clientSlug ? `https://${clientSlug}-dev.pages.dev` : '');
-const tier = Astro.url.searchParams.get('tier') || '';
-const domain = Astro.url.searchParams.get('domain') || Astro.url.searchParams.get('preferred_domain') || '';
-const email = Astro.url.searchParams.get('email') || '';
-const orderId = Astro.url.searchParams.get('order') || Astro.url.searchParams.get('submissionId') || '';
-const feedbackUrl = Astro.url.searchParams.get('feedback_url') || '';
-
-function packageLabel(value: string) {
-  if (value === 'one_time') return '$399 one-time website with 3 revisions';
-  if (value === 'yearly_maintenance') return '$799/year website with monthly maintenance';
-  return value;
-}
 ---
 
 <Layout title={`Thank You - ${siteConfig.name}`} description="Order confirmation">
@@ -26,11 +11,11 @@ function packageLabel(value: string) {
       We will review the order, prepare the next dev preview, and send you a review link before anything goes live.
     </p>
 
-    <div class="summary-grid">
-      {clientSlug && <div><span>Preview</span><a href={previewUrl} target="_blank">{previewUrl}</a></div>}
-      {repo && <div><span>Project</span><strong>{repo}</strong></div>}
-      {tier && <div><span>Package</span><strong>{packageLabel(tier)}</strong></div>}
-      {orderId && <div><span>Order</span><strong>{orderId}</strong></div>}
+    <div class="summary-grid" data-summary hidden>
+      <div data-preview-row hidden><span>Preview</span><a data-preview target="_blank"></a></div>
+      <div data-repo-row hidden><span>Project</span><strong data-repo></strong></div>
+      <div data-tier-row hidden><span>Package</span><strong data-tier></strong></div>
+      <div data-order-row hidden><span>Order</span><strong data-order></strong></div>
     </div>
 
     <div class="next-grid">
@@ -41,7 +26,7 @@ function packageLabel(value: string) {
           Use your root domain, for example <strong>yourbusiness.com</strong>, or use a subdomain like
           <strong> menu.yourbusiness.com</strong>. If you already entered a domain, we will use that as the starting point.
         </p>
-        {domain && <p class="note">Submitted domain: <strong>{domain}</strong></p>}
+        <p class="note" data-domain-note hidden>Submitted domain: <strong data-domain></strong></p>
       </article>
 
       <article>
@@ -60,7 +45,7 @@ function packageLabel(value: string) {
           Reply with content edits, new photos, logo files, menu updates, or design notes. One-time websites include
           3 revision rounds; yearly maintenance includes monthly updates.
         </p>
-        {feedbackUrl && <a class="action-link" href={feedbackUrl}>Submit revision request</a>}
+        <a class="action-link" data-feedback-link hidden>Submit revision request</a>
       </article>
 
       <article>
@@ -75,13 +60,83 @@ function packageLabel(value: string) {
     <div class="contact-panel">
       <h2>Need to add something?</h2>
       <p>
-        {email ? `We will contact ${email}. ` : ''}
+        <span data-email-line>We will contact you using the email submitted in the payment form. </span>
         You can also email us directly with assets, domain notes, or urgent changes.
       </p>
       <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
     </div>
   </section>
 </Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const values = {
+    clientSlug: params.get('client_slug') || '',
+    repo: params.get('repo') || '',
+    previewUrl: params.get('preview_url') || '',
+    tier: params.get('tier') || '',
+    order: params.get('order') || params.get('submissionId') || '',
+    domain: params.get('domain') || params.get('preferred_domain') || '',
+    email: params.get('email') || '',
+    feedbackUrl: params.get('feedback_url') || '',
+  };
+
+  if (!values.previewUrl && values.clientSlug) {
+    values.previewUrl = `https://${values.clientSlug}-dev.pages.dev`;
+  }
+
+  const summary = document.querySelector('[data-summary]');
+  const rows = [
+    ['preview', values.previewUrl, (node) => {
+      node.textContent = values.previewUrl;
+      node.href = values.previewUrl;
+    }],
+    ['repo', values.repo],
+    ['tier', packageLabel(values.tier)],
+    ['order', values.order],
+  ];
+
+  let hasSummary = false;
+  rows.forEach(([name, value, apply]) => {
+    if (!value) return;
+    const row = document.querySelector(`[data-${name}-row]`);
+    const target = document.querySelector(`[data-${name}]`);
+    if (!row || !target) return;
+    if (apply) apply(target);
+    else target.textContent = value;
+    row.hidden = false;
+    hasSummary = true;
+  });
+  if (summary && hasSummary) summary.hidden = false;
+
+  if (values.domain) {
+    const note = document.querySelector('[data-domain-note]');
+    const domain = document.querySelector('[data-domain]');
+    if (note && domain) {
+      domain.textContent = values.domain;
+      note.hidden = false;
+    }
+  }
+
+  if (values.feedbackUrl) {
+    const link = document.querySelector('[data-feedback-link]');
+    if (link) {
+      link.href = values.feedbackUrl;
+      link.hidden = false;
+    }
+  }
+
+  if (values.email) {
+    const emailLine = document.querySelector('[data-email-line]');
+    if (emailLine) emailLine.textContent = `We will contact ${values.email}. `;
+  }
+
+  function packageLabel(value) {
+    if (value === 'one_time') return '$399 one-time website with 3 revisions';
+    if (value === 'yearly_maintenance') return '$799/year website with monthly maintenance';
+    return value;
+  }
+</script>
 
 <style>
   .thank-you-shell {
