@@ -22,9 +22,10 @@ const rating = content.hero.rating ? String(content.hero.rating) : 'Verified';
 const reviewCount = content.hero.reviewCount ? `${content.hero.reviewCount.toLocaleString()}+` : 'Google';
 const menuCount = menuItems.length ? `${menuItems.length}+` : 'Curated';
 const addressShort = content.contact.address?.split(',').slice(0, 2).join(',') || 'Brisbane';
+const cityName = inferCity(content.contact.address) || 'Brisbane';
 const proofItems = [
   { value: rating, label: 'Google rating' },
-  { value: reviewCount, label: 'Guest signals' },
+  { value: reviewCount, label: 'Google reviews' },
   { value: menuCount, label: 'Menu items' },
   { value: content.cta.reserveUrl ? 'Reserve' : 'Call', label: 'Direct booking' },
 ];
@@ -32,7 +33,7 @@ const serviceCards = [
   {
     eyebrow: '01',
     title: 'Dining room',
-    copy: `A composed ${cuisine} experience in the heart of Brisbane, shaped for relaxed lunches, dinners, and celebrations.`,
+    copy: `A composed ${cuisine} experience in the heart of ${cityName}, shaped for relaxed lunches, dinners, and celebrations.`,
     image: supportImages[0] || heroImage,
   },
   {
@@ -49,20 +50,27 @@ const serviceCards = [
   },
 ];
 const trustItems = [
-  { title: 'Central Brisbane location', copy: content.contact.address || 'A convenient city address for lunch, dinner, and private celebrations.' },
+  { title: `Central ${cityName} location`, copy: content.contact.address || 'A convenient city address for lunch, dinner, and private celebrations.' },
   { title: 'Guest confidence', copy: content.hero.reviewCount ? `${content.hero.reviewCount.toLocaleString()} Google reviews with a ${rating}/5 rating.` : 'Clear contact details and direct booking for guest confidence.' },
   { title: 'Menu before arrival', copy: 'A mobile-friendly menu keeps dishes, descriptions, and prices easy to scan.' },
 ];
+
+function inferCity(address: string | undefined) {
+  if (!address) return '';
+  const parts = address.split(',').map((part) => part.trim()).filter(Boolean);
+  const locality = parts.find((part) => /\bCity\b/i.test(part)) || parts[1] || parts[0] || '';
+  return locality.replace(/\s+(QLD|NSW|VIC|WA|SA|TAS|ACT|NT)\b.*$/i, '').trim();
+}
 ---
 
-<Layout title={content.hero.name + ' Official Preview'} description={content.hero.tagline} brandName={content.hero.name} fullBleed>
+<Layout title={content.hero.name + ' | Restaurant & Reservations'} description={content.hero.tagline} brandName={content.hero.name} fullBleed>
   <div class="site-shell" style={styles}>
     <section class="hero-section">
       {heroImage && <img class="hero-bg" src={heroImage} alt={`${content.hero.name} dining room or food`} />}
       <div class="hero-shade"></div>
       <div class="section-inner hero-inner">
         <div class="hero-copy">
-          <p class="eyebrow">Brisbane dining</p>
+          <p class="eyebrow">{cityName} dining</p>
           {logo && <img class="hero-logo" src={logo} alt={`${content.hero.name} logo`} />}
           <h1>{content.hero.name}</h1>
           <p class="hero-subtitle">{content.hero.tagline || `${cuisine} in ${addressShort}`}</p>
@@ -91,7 +99,7 @@ const trustItems = [
         <div class="section-heading">
           <p class="eyebrow">At the table</p>
           <h2>Modern dining, clear details, easy booking.</h2>
-          <span>A polished restaurant website should lead with atmosphere and trust, then make the menu, booking, call, and map paths effortless.</span>
+          <span>Atmosphere comes first, then the practical details guests need: menu, booking, phone, and directions.</span>
         </div>
         <div class="service-grid">
           {serviceCards.map((card) => (
@@ -123,7 +131,7 @@ const trustItems = [
           <p class="eyebrow">Why visit</p>
           <h2>A city dining room with a confident point of view.</h2>
           <p class="lede">
-            {content.hero.name} pairs a central Brisbane address with a menu built for sharing, booking links that work, and the practical details guests need before they arrive.
+            {content.hero.name} pairs a central {cityName} address with a menu built for sharing, a clear reservation path, and the practical details guests need before they arrive.
           </p>
           <div class="trust-list">
             {trustItems.map((item) => (
