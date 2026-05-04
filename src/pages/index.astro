@@ -23,8 +23,12 @@ const logo = content.brand?.logo || '';
   <section class="restaurant-shell" style={styles}>
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="source-pill">Google Places + official menu</p>
-        {logo && <img src={logo} alt={`${content.hero.name} logo`} class="brand-logo" />}
+        {logo && (
+          <div class="brand-logo-lockup">
+            <img src={logo} alt={`${content.hero.name} logo`} class="brand-logo" />
+          </div>
+        )}
+        <p class="source-pill">Verified menu preview</p>
         <h1>{content.hero.name}</h1>
         <p class="tagline">{content.hero.tagline}</p>
         <div class="actions">
@@ -36,10 +40,16 @@ const logo = content.brand?.logo || '';
       </div>
 
       <div class="image-board" aria-label={`${content.hero.name} gallery`}>
-        {heroImage
-          ? <img src={heroImage} alt={`${content.hero.name} food or venue`} class="hero-photo" />
-          : <div class="image-placeholder">Photo pending</div>}
-        <div class="image-row">
+        <figure class="hero-frame">
+          {heroImage
+            ? <img src={heroImage} alt={`${content.hero.name} food or venue`} class="hero-photo" />
+            : <div class="image-placeholder">Photo pending</div>}
+          <figcaption>
+            <span>{content.hero.rating ? `${content.hero.rating}/5` : 'Verified'}</span>
+            <small>{content.hero.reviewCount ? `${content.hero.reviewCount} Google reviews` : 'Google Places evidence'}</small>
+          </figcaption>
+        </figure>
+        <div class="image-row" aria-label="Venue photos">
           {supportImages.map((image: string) => (
             <img src={image} alt={`${content.hero.name} gallery image`} />
           ))}
@@ -47,7 +57,7 @@ const logo = content.brand?.logo || '';
       </div>
     </div>
 
-    <div class="fact-grid">
+    <div class="fact-grid" aria-label="Contact facts">
       <a class="fact-card" href={content.cta.mapUrl || undefined}>
         <span>Address</span>
         <strong>{content.contact.address || 'Address pending'}</strong>
@@ -70,8 +80,8 @@ const logo = content.brand?.logo || '';
   <section class="menu-preview" style={styles}>
     <div class="section-heading">
       <div>
-        <p>Signature picks</p>
-        <h2>Real menu highlights</h2>
+        <p>Menu edit</p>
+        <h2>Highlights from the official menu</h2>
       </div>
       {hasMenu && <a href="/menu">Full menu</a>}
     </div>
@@ -97,52 +107,63 @@ const logo = content.brand?.logo || '';
 
 <style>
   .restaurant-shell {
-    background: var(--wj-bg);
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--wj-bg), white 10%), var(--wj-bg) 58%),
+      var(--wj-bg);
     color: var(--wj-ink);
     border-radius: 8px;
-    padding: clamp(1.25rem, 4vw, 3rem);
+    padding: clamp(1rem, 3vw, 2rem);
   }
 
   .hero-grid {
     display: grid;
-    gap: 2rem;
-    align-items: center;
+    gap: clamp(1.2rem, 4vw, 3.5rem);
+    align-items: stretch;
   }
 
   .source-pill {
     display: inline-flex;
-    border: 1px solid color-mix(in srgb, var(--wj-accent), white 58%);
-    border-radius: 999px;
-    padding: 0.45rem 0.9rem;
+    margin-top: clamp(1rem, 3vw, 2.5rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--wj-accent), white 25%);
+    padding-bottom: 0.35rem;
     color: var(--wj-accent);
-    background: color-mix(in srgb, var(--wj-surface), transparent 10%);
-    font-size: 0.72rem;
-    font-weight: 800;
+    font-size: 0.7rem;
+    font-weight: 900;
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
 
   .brand-logo {
     display: block;
-    width: min(260px, 76vw);
-    max-height: 92px;
+    width: min(260px, 64vw);
+    max-height: 84px;
     object-fit: contain;
     object-position: left center;
-    margin: 1.5rem 0;
+  }
+
+  .brand-logo-lockup {
+    display: inline-flex;
+    max-width: 100%;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    background: color-mix(in srgb, var(--wj-ink), black 8%);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.12);
   }
 
   h1 {
-    max-width: 760px;
-    font-size: clamp(3rem, 8vw, 5.8rem);
-    line-height: 0.92;
+    max-width: 720px;
+    margin-top: 1.15rem;
+    font-size: clamp(3.45rem, 10vw, 7.4rem);
+    line-height: 0.86;
     font-weight: 900;
     letter-spacing: 0;
   }
 
   .tagline {
-    max-width: 560px;
-    margin-top: 1.4rem;
-    color: var(--wj-muted);
+    max-width: 620px;
+    margin-top: 1.25rem;
+    color: color-mix(in srgb, var(--wj-muted), var(--wj-ink) 12%);
     font-size: 1.2rem;
     line-height: 1.65;
   }
@@ -151,7 +172,7 @@ const logo = content.brand?.logo || '';
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
-    margin-top: 2rem;
+    margin-top: 2.2rem;
   }
 
   .button {
@@ -161,7 +182,7 @@ const logo = content.brand?.logo || '';
     justify-content: center;
     border-radius: 999px;
     padding: 0.75rem 1.3rem;
-    font-weight: 800;
+    font-weight: 900;
     text-decoration: none;
   }
 
@@ -183,15 +204,47 @@ const logo = content.brand?.logo || '';
 
   .image-board {
     display: grid;
-    gap: 1rem;
+    gap: 0.85rem;
+    align-content: stretch;
+  }
+
+  .hero-frame {
+    position: relative;
+    min-height: 460px;
   }
 
   .hero-photo,
   .image-placeholder {
     width: 100%;
-    aspect-ratio: 1.18;
+    height: 100%;
+    min-height: 460px;
     border-radius: 8px;
     object-fit: cover;
+  }
+
+  .hero-frame figcaption {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: grid;
+    gap: 0.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    background: rgba(11, 9, 7, 0.72);
+    color: white;
+    backdrop-filter: blur(14px);
+  }
+
+  .hero-frame span {
+    font-size: 1.2rem;
+    font-weight: 950;
+  }
+
+  .hero-frame small {
+    font-size: 0.72rem;
+    font-weight: 750;
+    opacity: 0.78;
   }
 
   .image-placeholder {
@@ -209,27 +262,27 @@ const logo = content.brand?.logo || '';
   }
 
   .image-row img {
-    width: 31%;
-    aspect-ratio: 0.82;
+    width: calc((100% - 1.8rem) / 3);
+    aspect-ratio: 1;
     border-radius: 8px;
     object-fit: cover;
-    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.14);
   }
 
   .fact-grid {
     display: grid;
     gap: 1rem;
-    margin-top: clamp(2rem, 6vw, 5rem);
+    margin-top: clamp(2rem, 5vw, 3.5rem);
   }
 
   .fact-card {
     display: grid;
     gap: 0.55rem;
-    min-height: 120px;
-    border: 1px solid color-mix(in srgb, var(--wj-muted), white 65%);
+    min-height: 118px;
+    border-top: 1px solid color-mix(in srgb, var(--wj-muted), white 40%);
     border-radius: 8px;
-    padding: 1.2rem;
-    background: color-mix(in srgb, var(--wj-surface), transparent 8%);
+    padding: 1.1rem 0;
+    background: transparent;
     color: var(--wj-ink);
     text-decoration: none;
   }
@@ -249,7 +302,7 @@ const logo = content.brand?.logo || '';
   }
 
   .menu-preview {
-    padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+    padding: clamp(3rem, 7vw, 5.5rem) 0;
   }
 
   .section-heading {
@@ -257,12 +310,14 @@ const logo = content.brand?.logo || '';
     align-items: end;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.25rem;
   }
 
   .section-heading h2 {
     margin-top: 0.35rem;
-    font-size: clamp(2rem, 5vw, 3rem);
+    max-width: 680px;
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 0.98;
     font-weight: 900;
     letter-spacing: 0;
   }
@@ -276,22 +331,22 @@ const logo = content.brand?.logo || '';
 
   .menu-grid {
     display: grid;
-    gap: 1rem;
+    gap: 0;
+    border-top: 1px solid #ded8cf;
   }
 
   .menu-card {
     display: flex;
-    min-height: 150px;
+    min-height: 168px;
     justify-content: space-between;
     gap: 1rem;
-    border: 1px solid #ded8cf;
-    border-radius: 8px;
-    padding: 1.35rem;
-    background: white;
+    border-bottom: 1px solid #ded8cf;
+    padding: 1.25rem 0;
+    background: transparent;
   }
 
   .menu-card h3 {
-    font-size: 1.15rem;
+    font-size: 1.22rem;
     font-weight: 900;
     line-height: 1.35;
   }
@@ -323,7 +378,20 @@ const logo = content.brand?.logo || '';
 
     .menu-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0 1.4rem;
     }
 
+  }
+
+  @media (max-width: 819px) {
+    .hero-copy {
+      padding: 0.25rem;
+    }
+
+    .hero-frame,
+    .hero-photo,
+    .image-placeholder {
+      min-height: 360px;
+    }
   }
 </style>

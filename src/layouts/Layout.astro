@@ -7,9 +7,15 @@ interface Props {
   title: string;
   description?: string;
   brandName?: string;
+  showSalesBar?: boolean;
 }
 
-const { title, description = siteConfig.description, brandName = siteConfig.name } = Astro.props;
+const {
+  title,
+  description = siteConfig.description,
+  brandName = siteConfig.name,
+  showSalesBar = true,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -20,11 +26,11 @@ const { title, description = siteConfig.description, brandName = siteConfig.name
   <meta name="description" content={description} />
   <title>{title}</title>
 </head>
-<body class="bg-white text-gray-900 antialiased">
-  <nav class="border-b border-gray-100">
-    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="text-xl font-bold tracking-tight">{brandName}</a>
-      <div class="flex gap-6 text-sm font-medium">
+<body class="bg-[#fbfaf7] text-gray-900 antialiased">
+  <nav class="border-b border-black/5 bg-[#fbfaf7]/90 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+      <a href="/" class="max-w-[14rem] text-lg font-black leading-tight tracking-tight sm:text-xl">{brandName}</a>
+      <div class="flex gap-5 text-sm font-semibold sm:gap-7">
         {siteConfig.navLinks.map(link => (
           <a href={link.href} class="hover:text-gray-600">{link.label}</a>
         ))}
@@ -32,15 +38,15 @@ const { title, description = siteConfig.description, brandName = siteConfig.name
     </div>
   </nav>
   
-  <main class="max-w-4xl mx-auto px-6 py-12">
+  <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 md:py-12">
     <slot />
   </main>
   
-  <footer class="border-t border-gray-100 mt-20">
-    <div class="max-w-4xl mx-auto px-6 py-8 text-sm text-gray-500">
+  <footer class="mt-20 border-t border-black/5">
+    <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500 sm:px-6">
       &copy; {new Date().getFullYear()} {brandName}. {siteConfig.footer.text}
     </div>
   </footer>
-  <PreviewSalesBar />
+  {showSalesBar && <PreviewSalesBar />}
 </body>
 </html>

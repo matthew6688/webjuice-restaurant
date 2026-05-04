@@ -12,24 +12,24 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
   <aside class="preview-sales-bar" aria-label="Preview claim actions">
     <div class="preview-sales-inner">
       <div class="preview-sales-copy">
-        <strong>Claim this preview</strong>
-        <span>Launch-ready site package</span>
+        <strong>Preview ready</strong>
+        <span>Claim, revise, or maintain this site</span>
       </div>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
         {oneTime?.purchaseUrl && (
-          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl}>
-            <span>${oneTime.amount}</span>
-            <small>One-time</small>
+          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl} target="_blank">
+            <span>Claim ${oneTime.amount}</span>
+            <small>3 revisions</small>
           </a>
         )}
         {yearly?.purchaseUrl && (
-          <a class="preview-sales-button" href={yearly.purchaseUrl}>
-            <span>${yearly.amount}</span>
-            <small>Yearly</small>
+          <a class="preview-sales-button" href={yearly.purchaseUrl} target="_blank">
+            <span>${yearly.amount}/yr</span>
+            <small>monthly care</small>
           </a>
         )}
         {checkout.feedbackUrl && (
-          <a class="preview-sales-link" href={checkout.feedbackUrl}>Request changes</a>
+          <a class="preview-sales-link" href={checkout.feedbackUrl} target="_blank">Request changes</a>
         )}
       </nav>
     </div>
@@ -38,7 +38,7 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
 
 <style>
   :global(body:has(.preview-sales-bar)) {
-    padding-bottom: 96px;
+    padding-bottom: 76px;
   }
 
   .preview-sales-bar {
@@ -47,22 +47,27 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
     right: 0;
     bottom: 0;
     left: 0;
-    border-top: 1px solid rgba(23, 18, 14, 0.12);
-    background: rgba(255, 253, 248, 0.94);
-    backdrop-filter: blur(18px);
+    padding: 0.55rem;
+    background: transparent;
     color: #17120e;
-    box-shadow: 0 -16px 40px rgba(23, 18, 14, 0.14);
+    pointer-events: none;
   }
 
   .preview-sales-inner {
     display: flex;
-    max-width: 1120px;
-    min-height: 78px;
+    max-width: 900px;
+    min-height: 56px;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.8rem;
     margin: 0 auto;
-    padding: 0.75rem 1rem;
+    border: 1px solid rgba(23, 18, 14, 0.12);
+    border-radius: 999px;
+    padding: 0.46rem;
+    background: rgba(255, 253, 248, 0.92);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 55px rgba(23, 18, 14, 0.2);
+    pointer-events: auto;
   }
 
   .preview-sales-copy {
@@ -72,14 +77,14 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
   }
 
   .preview-sales-copy strong {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
     font-weight: 900;
     line-height: 1.1;
   }
 
   .preview-sales-copy span {
     color: #6d6258;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     line-height: 1.25;
   }
@@ -88,13 +93,13 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.45rem;
   }
 
   .preview-sales-button,
   .preview-sales-link {
     display: inline-flex;
-    min-height: 46px;
+    min-height: 42px;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
@@ -103,9 +108,9 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
   }
 
   .preview-sales-button {
-    gap: 0.35rem;
+    gap: 0.32rem;
     border: 1px solid rgba(23, 18, 14, 0.16);
-    padding: 0.55rem 0.9rem;
+    padding: 0.45rem 0.82rem;
     background: #17120e;
     color: #fffdf8;
   }
@@ -116,22 +121,22 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
   }
 
   .preview-sales-button span {
-    font-size: 1rem;
+    font-size: 0.86rem;
     font-weight: 950;
     line-height: 1;
   }
 
   .preview-sales-button small {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 850;
     line-height: 1;
   }
 
   .preview-sales-link {
-    min-height: 42px;
-    padding: 0.45rem 0.65rem;
+    min-height: 38px;
+    padding: 0.42rem 0.6rem;
     color: #17120e;
-    font-size: 0.82rem;
+    font-size: 0.76rem;
     font-weight: 900;
     text-decoration: underline;
     text-underline-offset: 4px;
@@ -139,30 +144,42 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
 
   @media (max-width: 680px) {
     :global(body:has(.preview-sales-bar)) {
-      padding-bottom: 138px;
+      padding-bottom: 104px;
     }
 
     .preview-sales-inner {
-      display: grid;
-      min-height: 118px;
-      gap: 0.6rem;
+      min-height: 54px;
+      align-items: center;
+      gap: 0.55rem;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .preview-sales-copy {
+      display: none;
     }
 
     .preview-sales-actions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      width: 100%;
+      overflow-x: auto;
+      width: auto;
+      max-width: 100vw;
+      padding-bottom: 0.1rem;
     }
 
     .preview-sales-button {
-      width: 100%;
-      padding-inline: 0.6rem;
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding-inline: 0.76rem;
+    }
+
+    .preview-sales-button small {
+      display: none;
     }
 
     .preview-sales-link {
-      grid-column: 1 / -1;
-      min-height: 36px;
-      justify-content: center;
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding-inline: 0.75rem;
     }
   }
 </style>
