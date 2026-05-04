@@ -1,0 +1,168 @@
+---
+import { loadCheckoutArtifact } from '../lib/restaurantArtifacts';
+
+const checkout = loadCheckoutArtifact();
+const tiers = checkout.tiers || [];
+const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || tiers[0];
+const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || tiers[1];
+const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || checkout.feedbackUrl);
+---
+
+{hasSalesBar && (
+  <aside class="preview-sales-bar" aria-label="Preview claim actions">
+    <div class="preview-sales-inner">
+      <div class="preview-sales-copy">
+        <strong>Claim this preview</strong>
+        <span>Launch-ready site package</span>
+      </div>
+      <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
+        {oneTime?.purchaseUrl && (
+          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl}>
+            <span>${oneTime.amount}</span>
+            <small>One-time</small>
+          </a>
+        )}
+        {yearly?.purchaseUrl && (
+          <a class="preview-sales-button" href={yearly.purchaseUrl}>
+            <span>${yearly.amount}</span>
+            <small>Yearly</small>
+          </a>
+        )}
+        {checkout.feedbackUrl && (
+          <a class="preview-sales-link" href={checkout.feedbackUrl}>Request changes</a>
+        )}
+      </nav>
+    </div>
+  </aside>
+)}
+
+<style>
+  :global(body:has(.preview-sales-bar)) {
+    padding-bottom: 96px;
+  }
+
+  .preview-sales-bar {
+    position: fixed;
+    z-index: 60;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-top: 1px solid rgba(23, 18, 14, 0.12);
+    background: rgba(255, 253, 248, 0.94);
+    backdrop-filter: blur(18px);
+    color: #17120e;
+    box-shadow: 0 -16px 40px rgba(23, 18, 14, 0.14);
+  }
+
+  .preview-sales-inner {
+    display: flex;
+    max-width: 1120px;
+    min-height: 78px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+  }
+
+  .preview-sales-copy {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+  }
+
+  .preview-sales-copy strong {
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  .preview-sales-copy span {
+    color: #6d6258;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .preview-sales-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .preview-sales-button,
+  .preview-sales-link {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .preview-sales-button {
+    gap: 0.35rem;
+    border: 1px solid rgba(23, 18, 14, 0.16);
+    padding: 0.55rem 0.9rem;
+    background: #17120e;
+    color: #fffdf8;
+  }
+
+  .preview-sales-primary {
+    background: #b9802f;
+    border-color: #b9802f;
+  }
+
+  .preview-sales-button span {
+    font-size: 1rem;
+    font-weight: 950;
+    line-height: 1;
+  }
+
+  .preview-sales-button small {
+    font-size: 0.72rem;
+    font-weight: 850;
+    line-height: 1;
+  }
+
+  .preview-sales-link {
+    min-height: 42px;
+    padding: 0.45rem 0.65rem;
+    color: #17120e;
+    font-size: 0.82rem;
+    font-weight: 900;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  @media (max-width: 680px) {
+    :global(body:has(.preview-sales-bar)) {
+      padding-bottom: 138px;
+    }
+
+    .preview-sales-inner {
+      display: grid;
+      min-height: 118px;
+      gap: 0.6rem;
+    }
+
+    .preview-sales-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .preview-sales-button {
+      width: 100%;
+      padding-inline: 0.6rem;
+    }
+
+    .preview-sales-link {
+      grid-column: 1 / -1;
+      min-height: 36px;
+      justify-content: center;
+    }
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { siteConfig } from '../config/site';
+import PreviewSalesBar from '../components/PreviewSalesBar.astro';
 
 interface Props {
   title: string;
@@ -40,5 +41,6 @@ const { title, description = siteConfig.description, brandName = siteConfig.name
       &copy; {new Date().getFullYear()} {brandName}. {siteConfig.footer.text}
     </div>
   </footer>
+  <PreviewSalesBar />
 </body>
 </html>
