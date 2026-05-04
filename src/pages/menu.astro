@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+const name = siteConfig.name;
+const sections = name.includes('Opa') ? [['Mezze', ['Tzatziki with warm pita', 'Saganaki with lemon', 'Crispy calamari', 'Greek village salad']], ['Grill', ['Lamb shoulder for sharing', 'Chicken souvlaki', 'Market fish', 'Lemon potatoes']], ['Drinks', ['Greek wines', 'Signature spritz', 'Classic cocktails', 'Zero-proof refreshers']]]
+  : name.includes('Babylon') ? [['Mezze', ['Hummus and warm bread', 'Labneh with herbs', 'Fried cauliflower', 'Pickles and olives']], ['Grill', ['Spiced chicken skewers', 'Lamb shoulder', 'Charred seafood', 'Seasonal vegetables']], ['Dessert & Drinks', ['Baklava-style sweets', 'House cocktails', 'Wine by the glass', 'Mint tea']]]
+  : name.includes('Longwang') ? [['Small Plates', ['Steamed dumplings', 'Crispy wontons', 'BBQ pork bao', 'Asian greens']], ['Mains', ['Wok-tossed noodles', 'Seafood fried rice', 'Black pepper beef', 'Seasonal fish']], ['Banquet', ['Shared starters', 'Chef selected mains', 'Rice and sides', 'Dessert plate']]]
+  : name.includes('Chu') ? [['Street Snacks', ['Bao buns', 'Dumplings', 'Fried chicken bites', 'Fresh herb salad']], ['Big Plates', ['Curry of the day', 'Wok noodles', 'Crispy pork belly', 'Market seafood']], ['Bar', ['House cocktails', 'Wine and beer', 'Fresh sodas', 'After-dinner drinks']]]
+  : [['Breakfast', ['Eggs on toast', 'Avocado and greens', 'Seasonal bowl', 'Coffee and pastries']], ['All Day', ['Seafood plate', 'Fresh salad', 'Burger and fries', 'Pasta special']], ['Drinks', ['Cocktails', 'Wine by the glass', 'Beer', 'Coffee']]];
+---
+
+<Layout title={'Menu - ' + name} description={'Preview menu for ' + name}>
+  <section class="py-10"><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Preview Menu</p><h1 class="mt-3 text-4xl font-bold text-stone-950 md:text-5xl">{name} Menu</h1><p class="mt-4 max-w-2xl text-lg leading-8 text-stone-700">A restaurant-focused menu page for outreach previews. Swap these sample items for the official menu when available.</p></section>
+  <section class="grid gap-6 pb-12 md:grid-cols-3">{sections.map(([title, items]) => (<article class="rounded-md border border-stone-200 bg-white p-6 shadow-sm"><h2 class="text-2xl font-semibold text-stone-950">{title}</h2><ul class="mt-5 space-y-4">{items.map((item) => (<li class="border-b border-stone-100 pb-4 last:border-0 last:pb-0"><span class="block font-medium text-stone-900">{item}</span><span class="mt-1 block text-sm leading-6 text-stone-600">Prepared for the preview menu and ready to replace with real menu copy.</span></li>))}</ul></article>))}</section>
+  <section class="rounded-md bg-stone-950 p-8 text-white"><h2 class="text-2xl font-semibold">Ready to book or order?</h2><p class="mt-3 text-stone-300">Call {siteConfig.phone || 'the restaurant'} or visit {siteConfig.address || 'the restaurant'}.</p><a href="/contact" class="mt-6 inline-flex rounded-md bg-amber-400 px-5 py-3 text-sm font-semibold text-stone-950 hover:bg-amber-300">Contact</a></section>
+</Layout>

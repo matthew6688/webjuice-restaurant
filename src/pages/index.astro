@@ -1,52 +1,58 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { siteConfig } from '../config/site';
-import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog', ({ data }) => !data.draft);
-const cases = await getCollection('cases', ({ data }) => !data.draft);
-const latestPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
-const latestCases = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+const name = siteConfig.name;
+const cuisine = name.includes('Opa') ? 'Greek mezze and riverside dining'
+  : name.includes('Babylon') ? 'Middle Eastern dining by the river'
+  : name.includes('Longwang') ? 'Modern Asian dining in Brisbane City'
+  : name.includes('Chu') ? 'Vibrant Asian street food and cocktails'
+  : name.includes('Joey') ? 'Modern riverside dining in Kangaroo Point'
+  : 'Seasonal dining and local hospitality';
+const menu = name.includes('Opa') ? [['Mezze Plates', 'Tzatziki, warm pita, olives, saganaki, calamari'], ['From the Grill', 'Lamb shoulder, chicken souvlaki, market seafood'], ['To Share', 'Greek salads, roasted vegetables, lemon potatoes']]
+  : name.includes('Babylon') ? [['Mezze', 'Hummus, labneh, pickles, warm bread, fried cauliflower'], ['Charcoal Grill', 'Skewers, spiced chicken, lamb, market seafood'], ['Banquet Style', 'Shared plates for groups, cocktails and desserts']]
+  : name.includes('Longwang') ? [['Signature Bites', 'Dumplings, bao, crispy starters, seasonal greens'], ['Wok & Grill', 'Noodles, rice, seafood, beef and chicken mains'], ['Banquet Menu', 'Shared dishes designed for groups and celebrations']]
+  : name.includes('Chu') ? [['Street Snacks', 'Bao, dumplings, fried chicken, fresh salads'], ['Big Plates', 'Curries, noodles, rice, seafood and grilled meats'], ['Drinks', 'Cocktails, wine, beer and non-alcoholic options']]
+  : [['Breakfast & Brunch', 'Fresh plates, eggs, toast, bowls and coffee'], ['Lunch & Dinner', 'Seafood, salads, burgers, pasta and shared plates'], ['Drinks', 'Cocktails, wine, beer, coffee and spritzes']];
+const phoneHref = siteConfig.phone ? 'tel:' + siteConfig.phone.replace(/[^+0-9]/g, '') : '/contact';
 ---
 
-<Layout title={`${siteConfig.name} - ${siteConfig.tagline}`}>
-  <section class="py-16 text-center">
-    <h1 class="text-5xl font-bold tracking-tight mb-6">{siteConfig.tagline}</h1>
-    <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
-      {siteConfig.description}
-    </p>
-    <div class="flex justify-center gap-4">
-      <a href="/contact" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800">Get in Touch</a>
-      <a href="/cases" class="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50">View Cases</a>
+<Layout title={name + ' Menu & Dining'} description={siteConfig.description}>
+  <section class="grid gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+    <div>
+      <p class="mb-3 text-sm font-semibold uppercase tracking-wide text-amber-700">Brisbane Restaurant</p>
+      <h1 class="max-w-3xl text-4xl font-bold leading-tight text-stone-950 md:text-6xl">{name}</h1>
+      <p class="mt-5 max-w-2xl text-lg leading-8 text-stone-700">{cuisine}. Browse the preview menu, check the location, and call the restaurant directly.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/menu" class="rounded-md bg-stone-950 px-5 py-3 text-sm font-semibold text-white hover:bg-stone-800">View menu</a>
+        <a href={phoneHref} class="rounded-md border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-950 hover:bg-stone-100">Call restaurant</a>
+      </div>
+      <div class="mt-8 grid gap-3 text-sm text-stone-700 sm:grid-cols-3">
+        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Rating</span>{siteConfig.rating ? siteConfig.rating + '/5 from ' + siteConfig.review_count + ' reviews' : 'Local favourite'}</div>
+        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Address</span>{siteConfig.address || 'Brisbane, Australia'}</div>
+        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Phone</span>{siteConfig.phone || 'Call for bookings'}</div>
+      </div>
+    </div>
+    <div class="min-h-[420px] overflow-hidden rounded-md bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center shadow-sm">
+      <div class="flex h-full min-h-[420px] items-end bg-gradient-to-t from-black/65 via-black/10 to-transparent p-8">
+        <div class="text-white">
+          <p class="text-sm font-semibold uppercase tracking-wide text-amber-200">Open for dining</p>
+          <p class="mt-2 max-w-sm text-2xl font-semibold">A cleaner preview site built around the restaurant, not a generic business shell.</p>
+        </div>
+      </div>
     </div>
   </section>
-
-  <section class="py-16 border-t border-gray-100">
-    <h2 class="text-2xl font-bold mb-8">Latest Posts</h2>
-    <div class="grid gap-8 md:grid-cols-3">
-      {latestPosts.map(post => (
-        <a href={`/blog/${post.slug}`} class="group block">
-          <h3 class="font-semibold text-lg group-hover:text-gray-600 mb-2">{post.data.title}</h3>
-          <p class="text-gray-600 text-sm line-clamp-2">{post.data.description}</p>
-          <span class="text-xs text-gray-400 mt-2 block">{post.data.pubDate.toLocaleDateString()}</span>
-        </a>
-      ))}
+  <section class="border-t border-stone-200 py-12">
+    <div class="mb-8 flex items-end justify-between gap-4">
+      <div><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Menu Preview</p><h2 class="mt-2 text-3xl font-bold text-stone-950">Popular sections</h2></div>
+      <a href="/menu" class="hidden text-sm font-semibold underline underline-offset-4 sm:block">Open full menu</a>
     </div>
-    <div class="mt-8">
-      <a href="/blog" class="text-sm font-medium underline underline-offset-4">View all posts &rarr;</a>
+    <div class="grid gap-5 md:grid-cols-3">
+      {menu.map(([title, copy]) => (<article class="rounded-md border border-stone-200 bg-white p-6 shadow-sm"><h3 class="text-xl font-semibold text-stone-950">{title}</h3><p class="mt-3 leading-7 text-stone-600">{copy}</p></article>))}
     </div>
   </section>
-
-  <section class="py-16 border-t border-gray-100">
-    <h2 class="text-2xl font-bold mb-8">Recent Cases</h2>
-    <div class="grid gap-8 md:grid-cols-2">
-      {latestCases.map(c => (
-        <a href={`/cases/${c.slug}`} class="group block p-6 border border-gray-100 rounded-lg hover:border-gray-300">
-          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.data.industry}</span>
-          <h3 class="text-xl font-semibold group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h3>
-          <p class="text-gray-600 text-sm">{c.data.description}</p>
-        </a>
-      ))}
-    </div>
+  <section class="grid gap-8 border-t border-stone-200 py-12 md:grid-cols-[0.8fr_1.2fr]">
+    <div><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Visit</p><h2 class="mt-2 text-3xl font-bold text-stone-950">Find {name}</h2></div>
+    <div class="space-y-4 text-stone-700"><p><strong class="text-stone-950">Address:</strong> {siteConfig.address || 'Brisbane, Australia'}</p><p><strong class="text-stone-950">Phone:</strong> {siteConfig.phone || 'Call for current bookings'}</p><p><strong class="text-stone-950">Note:</strong> This is a preview website. Replace the sample menu with the restaurant's official menu before sending final outreach.</p></div>
   </section>
 </Layout>
