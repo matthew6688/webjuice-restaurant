@@ -18,14 +18,28 @@ const DEFAULT_AGENT_REPO = 'matthew6688/webjuice-stack-mvp';
 const DEFAULT_AGENT_WORKFLOW_ID = 'route-funnel-event.yml';
 
 export async function dispatchFunnelEvent(env: AgentDispatchEnv, input: DispatchInput) {
+  return dispatchWorkflow(env, env.AGENT_WORKFLOW_ID || DEFAULT_AGENT_WORKFLOW_ID, {
+    provider: input.provider,
+    payload: JSON.stringify(input.payload),
+    send_discord: String(input.sendDiscord ?? true),
+    send_email: String(input.sendEmail ?? true),
+    dry_run: String(input.dryRun ?? false),
+  }, input);
+}
+
+export async function dispatchWorkflow(
+  env: AgentDispatchEnv,
+  workflowId: string,
+  inputs: Record<string, string>,
+  webhookBody: unknown = inputs,
+) {
   if (env.AGENT_WEBHOOK_URL) {
-    return postJson(env.AGENT_WEBHOOK_URL, input);
+    return postJson(env.AGENT_WEBHOOK_URL, webhookBody);
   }
 
   if (!env.AGENT_GITHUB_TOKEN) return { ok: false, skipped: true, reason: 'agent_dispatch_not_configured' };
 
   const repo = env.AGENT_REPO || DEFAULT_AGENT_REPO;
-  const workflowId = env.AGENT_WORKFLOW_ID || DEFAULT_AGENT_WORKFLOW_ID;
   const ref = env.AGENT_REF || 'main';
   const response = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/${workflowId}/dispatches`, {
     method: 'POST',
@@ -38,13 +52,7 @@ export async function dispatchFunnelEvent(env: AgentDispatchEnv, input: Dispatch
     },
     body: JSON.stringify({
       ref,
-      inputs: {
-        provider: input.provider,
-        payload: JSON.stringify(input.payload),
-        send_discord: String(input.sendDiscord ?? true),
-        send_email: String(input.sendEmail ?? true),
-        dry_run: String(input.dryRun ?? false),
-      },
+      inputs,
     }),
   });
 
