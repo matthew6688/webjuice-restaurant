@@ -9,6 +9,7 @@ interface Props {
   brandName?: string;
   showSalesBar?: boolean;
   showChrome?: boolean;
+  fullBleed?: boolean;
 }
 
 const {
@@ -17,6 +18,7 @@ const {
   brandName = siteConfig.name,
   showSalesBar = true,
   showChrome = true,
+  fullBleed = false,
 } = Astro.props;
 ---
 
@@ -42,7 +44,7 @@ const {
     </nav>
   )}
   
-  <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 md:py-12">
+  <main class={fullBleed ? 'w-full' : 'mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 md:py-12'}>
     <slot />
   </main>
   
