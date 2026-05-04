@@ -192,6 +192,7 @@ function inferCity(address: string | undefined) {
     --dark: color-mix(in srgb, var(--wj-ink), #101522 28%);
     background: var(--page-bg);
     color: var(--wj-ink);
+    overflow-x: clip;
   }
 
   .section-inner {
@@ -216,10 +217,11 @@ function inferCity(address: string | undefined) {
   }
 
   .hero-bg {
-    width: 100%;
-    height: 100%;
+    width: 102%;
+    height: 102%;
+    left: -1%;
+    top: -1%;
     object-fit: cover;
-    transform: scale(1.02);
   }
 
   .hero-shade {
