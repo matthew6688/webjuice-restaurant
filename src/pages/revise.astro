@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
+
+const content = loadRestaurantContent();
+const checkout = loadCheckoutArtifact();
+---
+
+<Layout title={`Request Revisions - ${content.hero.name}`} description="Submit website revision request">
+  <section class="revise-shell">
+    <p class="eyebrow">Revision request</p>
+    <h1>{content.hero.name}</h1>
+    <p class="lede">Enter the Stripe order ID from your confirmation page and the same email used at checkout. We match both before a revision task is created.</p>
+
+    <form class="revise-form" data-revise-form>
+      <input type="hidden" name="client_slug" value={checkout.hiddenFields?.client_slug || checkout.clientSlug || ''} />
+      <input type="hidden" name="repo" value={checkout.hiddenFields?.repo || ''} />
+      <input type="hidden" name="template" value={checkout.hiddenFields?.template || 'webjuice-restaurant'} />
+      <input type="hidden" name="preview_url" value={checkout.hiddenFields?.preview_url || ''} />
+
+      <label>
+        Order ID
+        <input name="order_id" required placeholder="cs_test_..." autocomplete="off" />
+      </label>
+
+      <label>
+        Checkout email
+        <input name="email" type="email" required placeholder="owner@example.com" />
+      </label>
+
+      <label class="wide">
+        Requested changes
+        <textarea name="requested_changes" required rows="7" placeholder="List the exact copy, menu, photo, domain, or design changes you want us to make."></textarea>
+      </label>
+
+      <label class="wide">
+        Reference URL or asset link
+        <input name="reference_url" placeholder="Google Drive, Dropbox, website URL, or image link" />
+      </label>
+
+      <button type="submit">Submit revision request</button>
+      <p class="status" data-status></p>
+    </form>
+  </section>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const form = document.querySelector('[data-revise-form]');
+  const status = document.querySelector('[data-status]');
+  const prefill = {
+    order_id: params.get('order_id') || params.get('session_id') || '',
+    email: params.get('email') || '',
+  };
+  for (const [name, value] of Object.entries(prefill)) {
+    if (value && form?.elements?.[name]) form.elements[name].value = value;
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    status.textContent = 'Submitting revision request...';
+    const payload = Object.fromEntries(new FormData(form).entries());
+    const response = await fetch('/api/revision-request/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      status.textContent = data.error || 'Revision request failed.';
+      return;
+    }
+    status.textContent = 'Revision request received. We will match your order ID and checkout email before creating the task.';
+    form.reset();
+  });
+</script>
+
+<style>
+  .revise-shell {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  .eyebrow {
+    color: #b9802f;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin-top: 0.8rem;
+    color: #17120e;
+    font-size: clamp(3rem, 8vw, 6.2rem);
+    font-weight: 950;
+    line-height: 0.9;
+  }
+
+  .lede {
+    max-width: 680px;
+    margin-top: 1.2rem;
+    color: #665d55;
+    font-size: 1.08rem;
+    line-height: 1.75;
+  }
+
+  .revise-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+    border: 1px solid #ddd6cc;
+    padding: clamp(1rem, 3vw, 2rem);
+    background: white;
+  }
+
+  label {
+    display: grid;
+    gap: 0.45rem;
+    color: #17120e;
+    font-weight: 900;
+  }
+
+  .wide,
+  button,
+  .status {
+    grid-column: 1 / -1;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    border: 1px solid #ddd6cc;
+    border-radius: 4px;
+    padding: 0.82rem 0.9rem;
+    color: #17120e;
+    font: inherit;
+    font-weight: 600;
+  }
+
+  button {
+    min-height: 52px;
+    border: 0;
+    border-radius: 4px;
+    background: #17120e;
+    color: white;
+    font-weight: 950;
+    cursor: pointer;
+  }
+
+  .status {
+    margin: 0;
+    color: #665d55;
+    font-weight: 800;
+  }
+
+  @media (max-width: 720px) {
+    .revise-form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

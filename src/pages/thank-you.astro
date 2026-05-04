@@ -75,7 +75,7 @@ import { siteConfig } from '../config/site';
     repo: params.get('repo') || '',
     previewUrl: params.get('preview_url') || '',
     tier: params.get('tier') || '',
-    order: params.get('order') || params.get('submissionId') || '',
+    order: params.get('order') || params.get('order_id') || params.get('session_id') || params.get('submissionId') || '',
     domain: params.get('domain') || params.get('preferred_domain') || '',
     email: params.get('email') || '',
     feedbackUrl: params.get('feedback_url') || '',
@@ -116,6 +116,15 @@ import { siteConfig } from '../config/site';
       domain.textContent = values.domain;
       note.hidden = false;
     }
+  }
+
+  if (!values.feedbackUrl && values.previewUrl) {
+    const feedbackUrl = new URL('/revise', values.previewUrl);
+    if (values.order) feedbackUrl.searchParams.set('order_id', values.order);
+    if (values.email) feedbackUrl.searchParams.set('email', values.email);
+    if (values.clientSlug) feedbackUrl.searchParams.set('client_slug', values.clientSlug);
+    if (values.repo) feedbackUrl.searchParams.set('repo', values.repo);
+    values.feedbackUrl = feedbackUrl.toString();
   }
 
   if (values.feedbackUrl) {
