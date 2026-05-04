@@ -1,58 +1,328 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { siteConfig } from '../config/site';
+import {
+  firstImage,
+  loadRestaurantContent,
+  loadRestaurantDesign,
+  paletteVars,
+  supportingImages,
+} from '../lib/restaurantArtifacts';
 
-const name = siteConfig.name;
-const cuisine = name.includes('Opa') ? 'Greek mezze and riverside dining'
-  : name.includes('Babylon') ? 'Middle Eastern dining by the river'
-  : name.includes('Longwang') ? 'Modern Asian dining in Brisbane City'
-  : name.includes('Chu') ? 'Vibrant Asian street food and cocktails'
-  : name.includes('Joey') ? 'Modern riverside dining in Kangaroo Point'
-  : 'Seasonal dining and local hospitality';
-const menu = name.includes('Opa') ? [['Mezze Plates', 'Tzatziki, warm pita, olives, saganaki, calamari'], ['From the Grill', 'Lamb shoulder, chicken souvlaki, market seafood'], ['To Share', 'Greek salads, roasted vegetables, lemon potatoes']]
-  : name.includes('Babylon') ? [['Mezze', 'Hummus, labneh, pickles, warm bread, fried cauliflower'], ['Charcoal Grill', 'Skewers, spiced chicken, lamb, market seafood'], ['Banquet Style', 'Shared plates for groups, cocktails and desserts']]
-  : name.includes('Longwang') ? [['Signature Bites', 'Dumplings, bao, crispy starters, seasonal greens'], ['Wok & Grill', 'Noodles, rice, seafood, beef and chicken mains'], ['Banquet Menu', 'Shared dishes designed for groups and celebrations']]
-  : name.includes('Chu') ? [['Street Snacks', 'Bao, dumplings, fried chicken, fresh salads'], ['Big Plates', 'Curries, noodles, rice, seafood and grilled meats'], ['Drinks', 'Cocktails, wine, beer and non-alcoholic options']]
-  : [['Breakfast & Brunch', 'Fresh plates, eggs, toast, bowls and coffee'], ['Lunch & Dinner', 'Seafood, salads, burgers, pasta and shared plates'], ['Drinks', 'Cocktails, wine, beer, coffee and spritzes']];
-const phoneHref = siteConfig.phone ? 'tel:' + siteConfig.phone.replace(/[^+0-9]/g, '') : '/contact';
+const content = loadRestaurantContent();
+const design = loadRestaurantDesign();
+const styles = paletteVars(design);
+const heroImage = firstImage(content);
+const supportImages = supportingImages(content);
+const sections = content.menu?.sections || [];
+const featuredItems = sections.flatMap((section: any) => section.items || []).slice(0, 6);
+const hasMenu = sections.length > 0;
+const logo = content.brand?.logo || '';
 ---
 
-<Layout title={name + ' Menu & Dining'} description={siteConfig.description}>
-  <section class="grid gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-    <div>
-      <p class="mb-3 text-sm font-semibold uppercase tracking-wide text-amber-700">Brisbane Restaurant</p>
-      <h1 class="max-w-3xl text-4xl font-bold leading-tight text-stone-950 md:text-6xl">{name}</h1>
-      <p class="mt-5 max-w-2xl text-lg leading-8 text-stone-700">{cuisine}. Browse the preview menu, check the location, and call the restaurant directly.</p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/menu" class="rounded-md bg-stone-950 px-5 py-3 text-sm font-semibold text-white hover:bg-stone-800">View menu</a>
-        <a href={phoneHref} class="rounded-md border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-950 hover:bg-stone-100">Call restaurant</a>
+<Layout title={content.hero.name + ' Menu & Dining'} description={content.hero.tagline} brandName={content.hero.name}>
+  <section class="restaurant-shell" style={styles}>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="source-pill">Google Places + official menu</p>
+        {logo && <img src={logo} alt={`${content.hero.name} logo`} class="brand-logo" />}
+        <h1>{content.hero.name}</h1>
+        <p class="tagline">{content.hero.tagline}</p>
+        <div class="actions">
+          {hasMenu && <a href="/menu" class="button button-primary">View menu</a>}
+          {content.cta.reserveUrl && <a href={content.cta.reserveUrl} class="button button-accent">Reserve</a>}
+          {content.cta.callUrl && <a href={content.cta.callUrl} class="button button-light">Call</a>}
+          {content.cta.mapUrl && <a href={content.cta.mapUrl} class="button button-light">Navigate</a>}
+        </div>
       </div>
-      <div class="mt-8 grid gap-3 text-sm text-stone-700 sm:grid-cols-3">
-        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Rating</span>{siteConfig.rating ? siteConfig.rating + '/5 from ' + siteConfig.review_count + ' reviews' : 'Local favourite'}</div>
-        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Address</span>{siteConfig.address || 'Brisbane, Australia'}</div>
-        <div class="border-l-2 border-amber-500 pl-3"><span class="block font-semibold text-stone-950">Phone</span>{siteConfig.phone || 'Call for bookings'}</div>
-      </div>
-    </div>
-    <div class="min-h-[420px] overflow-hidden rounded-md bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center shadow-sm">
-      <div class="flex h-full min-h-[420px] items-end bg-gradient-to-t from-black/65 via-black/10 to-transparent p-8">
-        <div class="text-white">
-          <p class="text-sm font-semibold uppercase tracking-wide text-amber-200">Open for dining</p>
-          <p class="mt-2 max-w-sm text-2xl font-semibold">A cleaner preview site built around the restaurant, not a generic business shell.</p>
+
+      <div class="image-board" aria-label={`${content.hero.name} gallery`}>
+        {heroImage
+          ? <img src={heroImage} alt={`${content.hero.name} food or venue`} class="hero-photo" />
+          : <div class="image-placeholder">Photo pending</div>}
+        <div class="image-row">
+          {supportImages.map((image: string) => (
+            <img src={image} alt={`${content.hero.name} gallery image`} />
+          ))}
         </div>
       </div>
     </div>
-  </section>
-  <section class="border-t border-stone-200 py-12">
-    <div class="mb-8 flex items-end justify-between gap-4">
-      <div><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Menu Preview</p><h2 class="mt-2 text-3xl font-bold text-stone-950">Popular sections</h2></div>
-      <a href="/menu" class="hidden text-sm font-semibold underline underline-offset-4 sm:block">Open full menu</a>
+
+    <div class="fact-grid">
+      <a class="fact-card" href={content.cta.mapUrl || undefined}>
+        <span>Address</span>
+        <strong>{content.contact.address || 'Address pending'}</strong>
+      </a>
+      <a class="fact-card" href={content.cta.callUrl || undefined}>
+        <span>Phone</span>
+        <strong>{content.contact.phone || 'Phone pending'}</strong>
+      </a>
+      <a class="fact-card" href={content.contact.website || undefined}>
+        <span>Website</span>
+        <strong>{content.contact.website ? 'Official site' : 'Website pending'}</strong>
+      </a>
+      <div class="fact-card">
+        <span>Rating</span>
+        <strong>{content.hero.rating ? `${content.hero.rating}/5 · ${content.hero.reviewCount} reviews` : 'Rating pending'}</strong>
+      </div>
     </div>
-    <div class="grid gap-5 md:grid-cols-3">
-      {menu.map(([title, copy]) => (<article class="rounded-md border border-stone-200 bg-white p-6 shadow-sm"><h3 class="text-xl font-semibold text-stone-950">{title}</h3><p class="mt-3 leading-7 text-stone-600">{copy}</p></article>))}
-    </div>
   </section>
-  <section class="grid gap-8 border-t border-stone-200 py-12 md:grid-cols-[0.8fr_1.2fr]">
-    <div><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Visit</p><h2 class="mt-2 text-3xl font-bold text-stone-950">Find {name}</h2></div>
-    <div class="space-y-4 text-stone-700"><p><strong class="text-stone-950">Address:</strong> {siteConfig.address || 'Brisbane, Australia'}</p><p><strong class="text-stone-950">Phone:</strong> {siteConfig.phone || 'Call for current bookings'}</p><p><strong class="text-stone-950">Note:</strong> This is a preview website. Replace the sample menu with the restaurant's official menu before sending final outreach.</p></div>
+
+  <section class="menu-preview">
+    <div class="section-heading">
+      <div>
+        <p>Signature picks</p>
+        <h2>Real menu highlights</h2>
+      </div>
+      {hasMenu && <a href="/menu">Full menu</a>}
+    </div>
+    <div class="menu-grid">
+      {featuredItems.map((item: any) => (
+        <article class="menu-card">
+          <div>
+            <h3>{item.name}</h3>
+            {item.description && <p>{item.description}</p>}
+          </div>
+          {item.price && <strong>{item.price}</strong>}
+        </article>
+      ))}
+      {!featuredItems.length && (
+        <article class="menu-card menu-card-empty">
+          <h3>Menu artifact required</h3>
+          <p>Add content.restaurant.json with menu.sections before sending this preview.</p>
+        </article>
+      )}
+    </div>
   </section>
 </Layout>
+
+<style>
+  .restaurant-shell {
+    background: var(--wj-bg);
+    color: var(--wj-ink);
+    border-radius: 8px;
+    padding: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .source-pill {
+    display: inline-flex;
+    border: 1px solid color-mix(in srgb, var(--wj-accent), white 58%);
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    color: var(--wj-accent);
+    background: color-mix(in srgb, var(--wj-surface), transparent 10%);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .brand-logo {
+    display: block;
+    width: min(260px, 76vw);
+    max-height: 92px;
+    object-fit: contain;
+    object-position: left center;
+    margin: 1.5rem 0;
+  }
+
+  h1 {
+    max-width: 760px;
+    font-size: clamp(3rem, 8vw, 5.8rem);
+    line-height: 0.92;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .tagline {
+    max-width: 560px;
+    margin-top: 1.4rem;
+    color: var(--wj-muted);
+    font-size: 1.2rem;
+    line-height: 1.65;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+
+  .button {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.75rem 1.3rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .button-primary {
+    background: var(--wj-ink);
+    color: var(--wj-surface);
+  }
+
+  .button-accent {
+    background: var(--wj-accent);
+    color: white;
+  }
+
+  .button-light {
+    border: 1px solid color-mix(in srgb, var(--wj-muted), white 58%);
+    color: var(--wj-ink);
+    background: color-mix(in srgb, var(--wj-surface), transparent 16%);
+  }
+
+  .image-board {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .hero-photo,
+  .image-placeholder {
+    width: 100%;
+    aspect-ratio: 1.18;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--wj-muted), white 65%);
+    color: var(--wj-ink);
+    font-weight: 800;
+  }
+
+  .image-row {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+
+  .image-row img {
+    width: 31%;
+    aspect-ratio: 0.82;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16);
+  }
+
+  .fact-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: clamp(2rem, 6vw, 5rem);
+  }
+
+  .fact-card {
+    display: grid;
+    gap: 0.55rem;
+    min-height: 120px;
+    border: 1px solid color-mix(in srgb, var(--wj-muted), white 65%);
+    border-radius: 8px;
+    padding: 1.2rem;
+    background: color-mix(in srgb, var(--wj-surface), transparent 8%);
+    color: var(--wj-ink);
+    text-decoration: none;
+  }
+
+  .fact-card span,
+  .section-heading p {
+    color: var(--wj-accent);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .fact-card strong {
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .menu-preview {
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-heading h2 {
+    margin-top: 0.35rem;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .section-heading a {
+    color: var(--wj-ink);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .menu-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .menu-card {
+    display: flex;
+    min-height: 150px;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid #ded8cf;
+    border-radius: 8px;
+    padding: 1.35rem;
+    background: white;
+  }
+
+  .menu-card h3 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .menu-card p {
+    margin-top: 0.8rem;
+    color: #675c52;
+    line-height: 1.55;
+  }
+
+  .menu-card strong {
+    color: var(--wj-accent);
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .menu-card-empty {
+    display: block;
+  }
+
+  @media (min-width: 820px) {
+    .hero-grid {
+      grid-template-columns: 1fr 0.86fr;
+    }
+
+    .fact-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .menu-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

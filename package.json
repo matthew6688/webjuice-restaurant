@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "apply:restaurant-artifacts": "node scripts/apply-client-artifacts.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",

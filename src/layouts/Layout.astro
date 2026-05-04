@@ -5,9 +5,10 @@ import { siteConfig } from '../config/site';
 interface Props {
   title: string;
   description?: string;
+  brandName?: string;
 }
 
-const { title, description = siteConfig.description } = Astro.props;
+const { title, description = siteConfig.description, brandName = siteConfig.name } = Astro.props;
 ---
 
 <!doctype html>
@@ -21,7 +22,7 @@ const { title, description = siteConfig.description } = Astro.props;
 <body class="bg-white text-gray-900 antialiased">
   <nav class="border-b border-gray-100">
     <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="text-xl font-bold tracking-tight">{siteConfig.name}</a>
+      <a href="/" class="text-xl font-bold tracking-tight">{brandName}</a>
       <div class="flex gap-6 text-sm font-medium">
         {siteConfig.navLinks.map(link => (
           <a href={link.href} class="hover:text-gray-600">{link.label}</a>
@@ -36,7 +37,7 @@ const { title, description = siteConfig.description } = Astro.props;
   
   <footer class="border-t border-gray-100 mt-20">
     <div class="max-w-4xl mx-auto px-6 py-8 text-sm text-gray-500">
-      &copy; {new Date().getFullYear()} {siteConfig.name}. {siteConfig.footer.text}
+      &copy; {new Date().getFullYear()} {brandName}. {siteConfig.footer.text}
     </div>
   </footer>
 </body>

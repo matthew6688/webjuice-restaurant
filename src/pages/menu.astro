@@ -1,16 +1,222 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { siteConfig } from '../config/site';
-const name = siteConfig.name;
-const sections = name.includes('Opa') ? [['Mezze', ['Tzatziki with warm pita', 'Saganaki with lemon', 'Crispy calamari', 'Greek village salad']], ['Grill', ['Lamb shoulder for sharing', 'Chicken souvlaki', 'Market fish', 'Lemon potatoes']], ['Drinks', ['Greek wines', 'Signature spritz', 'Classic cocktails', 'Zero-proof refreshers']]]
-  : name.includes('Babylon') ? [['Mezze', ['Hummus and warm bread', 'Labneh with herbs', 'Fried cauliflower', 'Pickles and olives']], ['Grill', ['Spiced chicken skewers', 'Lamb shoulder', 'Charred seafood', 'Seasonal vegetables']], ['Dessert & Drinks', ['Baklava-style sweets', 'House cocktails', 'Wine by the glass', 'Mint tea']]]
-  : name.includes('Longwang') ? [['Small Plates', ['Steamed dumplings', 'Crispy wontons', 'BBQ pork bao', 'Asian greens']], ['Mains', ['Wok-tossed noodles', 'Seafood fried rice', 'Black pepper beef', 'Seasonal fish']], ['Banquet', ['Shared starters', 'Chef selected mains', 'Rice and sides', 'Dessert plate']]]
-  : name.includes('Chu') ? [['Street Snacks', ['Bao buns', 'Dumplings', 'Fried chicken bites', 'Fresh herb salad']], ['Big Plates', ['Curry of the day', 'Wok noodles', 'Crispy pork belly', 'Market seafood']], ['Bar', ['House cocktails', 'Wine and beer', 'Fresh sodas', 'After-dinner drinks']]]
-  : [['Breakfast', ['Eggs on toast', 'Avocado and greens', 'Seasonal bowl', 'Coffee and pastries']], ['All Day', ['Seafood plate', 'Fresh salad', 'Burger and fries', 'Pasta special']], ['Drinks', ['Cocktails', 'Wine by the glass', 'Beer', 'Coffee']]];
+import { loadRestaurantContent, loadRestaurantDesign, paletteVars } from '../lib/restaurantArtifacts';
+
+const content = loadRestaurantContent();
+const design = loadRestaurantDesign();
+const styles = paletteVars(design);
+const sections = content.menu?.sections || [];
 ---
 
-<Layout title={'Menu - ' + name} description={'Preview menu for ' + name}>
-  <section class="py-10"><p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Preview Menu</p><h1 class="mt-3 text-4xl font-bold text-stone-950 md:text-5xl">{name} Menu</h1><p class="mt-4 max-w-2xl text-lg leading-8 text-stone-700">A restaurant-focused menu page for outreach previews. Swap these sample items for the official menu when available.</p></section>
-  <section class="grid gap-6 pb-12 md:grid-cols-3">{sections.map(([title, items]) => (<article class="rounded-md border border-stone-200 bg-white p-6 shadow-sm"><h2 class="text-2xl font-semibold text-stone-950">{title}</h2><ul class="mt-5 space-y-4">{items.map((item) => (<li class="border-b border-stone-100 pb-4 last:border-0 last:pb-0"><span class="block font-medium text-stone-900">{item}</span><span class="mt-1 block text-sm leading-6 text-stone-600">Prepared for the preview menu and ready to replace with real menu copy.</span></li>))}</ul></article>))}</section>
-  <section class="rounded-md bg-stone-950 p-8 text-white"><h2 class="text-2xl font-semibold">Ready to book or order?</h2><p class="mt-3 text-stone-300">Call {siteConfig.phone || 'the restaurant'} or visit {siteConfig.address || 'the restaurant'}.</p><a href="/contact" class="mt-6 inline-flex rounded-md bg-amber-400 px-5 py-3 text-sm font-semibold text-stone-950 hover:bg-amber-300">Contact</a></section>
+<Layout title={'Menu - ' + content.hero.name} description={'Official menu preview for ' + content.hero.name} brandName={content.hero.name}>
+  <section class="menu-page" style={styles}>
+    <div class="menu-head">
+      <p>Official menu evidence</p>
+      <h1>{content.hero.name} Menu</h1>
+      {content.menu?.sourceUrl && <a href={content.menu.sourceUrl}>Menu source</a>}
+    </div>
+
+    <div class="section-list">
+      {sections.map((section: any) => (
+        <section class="menu-section">
+          <div class="section-title">
+            <h2>{section.name}</h2>
+            {section.description && <p>{section.description}</p>}
+          </div>
+          <div class="items">
+            {(section.items || []).map((item: any) => (
+              <article class="menu-item">
+                <div>
+                  <h3>{item.name}</h3>
+                  {item.description && <p>{item.description}</p>}
+                  {item.sourceUrl && <a href={item.sourceUrl}>Source</a>}
+                </div>
+                {item.price && <strong>{item.price}</strong>}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    {!sections.length && (
+      <section class="empty-state">
+        <h2>Menu artifact required</h2>
+        <p>Add a validated content.restaurant.json file with menu.sections before sending this preview.</p>
+      </section>
+    )}
+
+    <section class="booking-band">
+      <div>
+        <h2>Book or visit</h2>
+        <p>{content.contact.address}</p>
+      </div>
+      <div class="booking-actions">
+        {content.cta.reserveUrl && <a href={content.cta.reserveUrl}>Reserve</a>}
+        {content.cta.callUrl && <a href={content.cta.callUrl}>Call</a>}
+        {content.cta.mapUrl && <a href={content.cta.mapUrl}>Navigate</a>}
+      </div>
+    </section>
+  </section>
 </Layout>
+
+<style>
+  .menu-page {
+    color: var(--wj-ink);
+  }
+
+  .menu-head {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem 0 3rem;
+  }
+
+  .menu-head p {
+    color: var(--wj-accent);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .menu-head h1 {
+    max-width: 820px;
+    font-size: clamp(3rem, 8vw, 5.6rem);
+    line-height: 0.94;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .menu-head a,
+  .menu-item a {
+    color: var(--wj-ink);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .section-list {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .menu-section {
+    display: grid;
+    gap: 1.2rem;
+    border-top: 1px solid #ddd6cc;
+    padding-top: 2rem;
+  }
+
+  .section-title h2 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 900;
+  }
+
+  .section-title p {
+    margin-top: 0.55rem;
+    color: var(--wj-muted);
+    line-height: 1.6;
+  }
+
+  .items {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .menu-item {
+    display: flex;
+    min-height: 130px;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid #ded8cf;
+    border-radius: 8px;
+    padding: 1.2rem;
+    background: white;
+  }
+
+  .menu-item h3 {
+    font-size: 1.1rem;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .menu-item p {
+    margin-top: 0.7rem;
+    color: #675c52;
+    line-height: 1.55;
+  }
+
+  .menu-item a {
+    display: inline-flex;
+    margin-top: 0.85rem;
+    font-size: 0.88rem;
+  }
+
+  .menu-item strong {
+    color: var(--wj-accent);
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .empty-state,
+  .booking-band {
+    margin-top: 3rem;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .empty-state {
+    background: #fff7ed;
+  }
+
+  .booking-band {
+    display: grid;
+    gap: 1.2rem;
+    background: var(--wj-ink);
+    color: white;
+  }
+
+  .booking-band h2 {
+    font-size: 1.7rem;
+    font-weight: 900;
+  }
+
+  .booking-band p {
+    margin-top: 0.5rem;
+    color: color-mix(in srgb, white, var(--wj-muted) 18%);
+  }
+
+  .booking-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .booking-actions a {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.75rem 1.2rem;
+    background: var(--wj-accent);
+    color: white;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  @media (min-width: 820px) {
+    .menu-section {
+      grid-template-columns: 0.38fr 1fr;
+    }
+
+    .items {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .booking-band {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+</style>
