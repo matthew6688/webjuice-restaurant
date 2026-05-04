@@ -12,6 +12,28 @@ const checkout = loadCheckoutArtifact();
     <h1>{content.hero.name}</h1>
     <p class="lede">Enter the Stripe order ID from your confirmation page and the same email used at checkout. We match both before a revision task is created.</p>
 
+    <div class="order-card" data-order-card hidden>
+      <div>
+        <span>Order status</span>
+        <strong data-order-title>Checking...</strong>
+      </div>
+      <dl>
+        <div>
+          <dt>Revisions</dt>
+          <dd data-revision-usage>-</dd>
+        </div>
+        <div>
+          <dt>Remaining</dt>
+          <dd data-revision-remaining>-</dd>
+        </div>
+        <div>
+          <dt>Plan</dt>
+          <dd data-plan>-</dd>
+        </div>
+      </dl>
+      <p data-reset hidden></p>
+    </div>
+
     <form class="revise-form" data-revise-form>
       <input type="hidden" name="client_slug" value={checkout.hiddenFields?.client_slug || checkout.clientSlug || ''} />
       <input type="hidden" name="repo" value={checkout.hiddenFields?.repo || ''} />
@@ -38,6 +60,7 @@ const checkout = loadCheckoutArtifact();
         <input name="reference_url" placeholder="Google Drive, Dropbox, website URL, or image link" />
       </label>
 
+      <button class="secondary" type="button" data-check-status>Check remaining revisions</button>
       <button type="submit">Submit revision request</button>
       <a class="extra-link" data-extra-link>Buy extra revision - $100</a>
       <p class="status" data-status></p>
@@ -49,6 +72,13 @@ const checkout = loadCheckoutArtifact();
   const params = new URLSearchParams(window.location.search);
   const form = document.querySelector('[data-revise-form]');
   const status = document.querySelector('[data-status]');
+  const orderCard = document.querySelector('[data-order-card]');
+  const orderTitle = document.querySelector('[data-order-title]');
+  const revisionUsage = document.querySelector('[data-revision-usage]');
+  const revisionRemaining = document.querySelector('[data-revision-remaining]');
+  const plan = document.querySelector('[data-plan]');
+  const reset = document.querySelector('[data-reset]');
+  const checkStatus = document.querySelector('[data-check-status]');
   const prefill = {
     order_id: params.get('order_id') || params.get('session_id') || '',
     email: params.get('email') || '',
@@ -64,6 +94,55 @@ const checkout = loadCheckoutArtifact();
     if (prefill.email) checkout.searchParams.set('email', prefill.email);
     extraLink.href = checkout.toString();
   }
+
+  async function loadOrderStatus() {
+    const payload = Object.fromEntries(new FormData(form).entries());
+    if (!payload.order_id || !payload.email) {
+      status.textContent = 'Enter your Order ID and checkout email to check remaining revisions.';
+      return;
+    }
+    orderCard.hidden = false;
+    orderTitle.textContent = 'Checking...';
+    status.textContent = '';
+    const response = await fetch('/api/order-status/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      orderTitle.textContent = data.error || 'Order not found';
+      revisionUsage.textContent = '-';
+      revisionRemaining.textContent = '-';
+      plan.textContent = '-';
+      reset.hidden = true;
+      return;
+    }
+    const used = data.revision?.used ?? 0;
+    const limit = data.revision?.limit ?? 0;
+    const remaining = data.revision?.remaining ?? 0;
+    orderTitle.textContent = data.case?.status ? data.case.status.replaceAll('_', ' ') : 'Active order';
+    revisionUsage.textContent = `${used}/${limit}`;
+    revisionRemaining.textContent = String(remaining);
+    plan.textContent = labelTier(data.order?.tier);
+    if (data.revision?.periodEnd) {
+      reset.hidden = false;
+      reset.textContent = `Next monthly maintenance reset: ${new Date(data.revision.periodEnd).toLocaleDateString()}`;
+    } else {
+      reset.hidden = true;
+    }
+    if (data.links?.extraRevision && extraLink) extraLink.href = data.links.extraRevision;
+  }
+
+  function labelTier(value) {
+    if (value === 'one_time') return '$399 one-time';
+    if (value === 'yearly_maintenance') return '$799 yearly';
+    if (value === 'extra_revision') return '$100 extra revision';
+    return value || '-';
+  }
+
+  checkStatus?.addEventListener('click', loadOrderStatus);
+  if (prefill.order_id && prefill.email) loadOrderStatus();
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -125,6 +204,56 @@ const checkout = loadCheckoutArtifact();
     background: white;
   }
 
+  .order-card {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+    border: 1px solid #ddd6cc;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    background: #f7f2eb;
+  }
+
+  .order-card span,
+  dt {
+    color: #8c6b45;
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .order-card strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #17120e;
+    font-size: 1.15rem;
+    text-transform: capitalize;
+  }
+
+  .order-card dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin: 0;
+  }
+
+  .order-card div {
+    min-width: 0;
+  }
+
+  dd {
+    margin: 0.25rem 0 0;
+    color: #17120e;
+    font-size: 1.05rem;
+    font-weight: 950;
+  }
+
+  .order-card p {
+    margin: 0;
+    color: #665d55;
+    font-weight: 800;
+  }
+
   label {
     display: grid;
     gap: 0.45rem;
@@ -159,6 +288,12 @@ const checkout = loadCheckoutArtifact();
     cursor: pointer;
   }
 
+  .secondary {
+    background: #f7f2eb;
+    color: #17120e;
+    border: 1px solid #ddd6cc;
+  }
+
   .extra-link {
     grid-column: 1 / -1;
     color: #17120e;
@@ -175,6 +310,10 @@ const checkout = loadCheckoutArtifact();
 
   @media (max-width: 720px) {
     .revise-form {
+      grid-template-columns: 1fr;
+    }
+
+    .order-card dl {
       grid-template-columns: 1fr;
     }
   }
