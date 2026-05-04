@@ -1,96 +1,121 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 
 interface Env {
+  SALES_DISCORD_WEBHOOK_URL?: string;
+  REVISE_DISCORD_WEBHOOK_URL?: string;
   DISCORD_WEBHOOK_URL?: string;
 }
-
-/**
- * Tally.so webhook handler
- * Receives form submissions and forwards to Discord
- *
- * Tally webhook setup:
- * 1. Go to your Tally form → Integrations → Webhooks
- * 2. Add endpoint: https://your-site.com/api/tally-webhook
- * 3. Form must include hidden fields: repo, template, tally_order_id
- */
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const payload = await context.request.json();
-
-    // Extract key fields from Tally payload
     const fields = payload.data?.fields || payload.fields || {};
     const answers = payload.data?.answers || payload.answers || {};
+    const combined = { ...fields, ...answers };
+    const order = normalizeSubmission(payload, combined);
+    const kind = classify(order);
+    const webhookUrl = kind === 'sale'
+      ? context.env.SALES_DISCORD_WEBHOOK_URL || context.env.DISCORD_WEBHOOK_URL
+      : context.env.REVISE_DISCORD_WEBHOOK_URL || context.env.DISCORD_WEBHOOK_URL;
 
-    // Hidden fields (passed via URL params)
-    const repo = extractField(answers, 'repo') || extractField(fields, 'repo') || 'unknown';
-    const template = extractField(answers, 'template') || extractField(fields, 'template') || 'unknown';
-    const orderId = extractField(answers, 'tally_order_id') || payload.id || 'unknown';
-
-    // Customer info
-    const company = extractField(answers, 'company_name') || extractField(answers, 'company') || 'N/A';
-    const email = extractField(answers, 'email') || 'N/A';
-    const tier = extractField(answers, 'tier') || extractField(answers, 'package') || 'N/A';
-    const color = extractField(answers, 'brand_color') || 'N/A';
-    const feedback = extractField(answers, 'feedback') || extractField(answers, 'modifications') || '';
-    const referenceUrl = extractField(answers, 'reference_url') || '';
-
-    // File uploads (Tally provides URLs)
-    const files = extractFiles(answers);
-
-    // Build Discord message
-    const discordPayload = {
-      username: 'WebJuice Orders',
-      embeds: [{
-        title: `🚀 New Order: ${company}`,
-        color: 0x00ff00,
-        fields: [
-          { name: 'Repo', value: repo, inline: true },
-          { name: 'Template', value: template, inline: true },
-          { name: 'Order ID', value: orderId, inline: true },
-          { name: 'Tier', value: tier, inline: true },
-          { name: 'Email', value: email, inline: true },
-          { name: 'Brand Color', value: color, inline: true },
-          { name: 'Reference', value: referenceUrl || 'None', inline: false },
-          { name: 'Feedback', value: feedback.slice(0, 1000) || 'None', inline: false },
-          { name: 'Files', value: files.length > 0 ? files.join('\n') : 'None', inline: false },
-        ],
-        timestamp: new Date().toISOString(),
-      }],
-    };
-
-    // Send to Discord if webhook configured
-    if (context.env.DISCORD_WEBHOOK_URL) {
-      await fetch(context.env.DISCORD_WEBHOOK_URL, {
+    if (webhookUrl) {
+      await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(discordPayload),
+        body: JSON.stringify(buildDiscordPayload(kind, order)),
       });
     }
 
-    return new Response(JSON.stringify({ success: true, repo, orderId }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (err) {
-    console.error('Webhook error:', err);
-    return new Response(JSON.stringify({ error: 'Internal error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json({ success: true, kind, repo: order.repo, clientSlug: order.clientSlug, orderId: order.orderId });
+  } catch (error) {
+    console.error('Tally webhook error', error);
+    return json({ success: false, error: 'Internal error' }, 500);
   }
 };
 
+export const onRequest: PagesFunction<Env> = async (context) => {
+  if (context.request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  return onRequestPost(context);
+};
+
+function normalizeSubmission(payload: any, answers: any) {
+  const repo = extractField(answers, 'repo') || 'unknown';
+  const clientSlug = extractField(answers, 'client_slug') || repo.split('/').pop() || 'unknown';
+  const tier = extractField(answers, 'tier') || extractField(answers, 'package') || '';
+  const amount = extractField(answers, 'amount') || extractField(answers, 'payment_amount') || '';
+  return {
+    orderId: extractField(answers, 'tally_order_id') || payload.id || payload.data?.submissionId || 'unknown',
+    clientSlug,
+    repo,
+    template: extractField(answers, 'template') || 'webjuice-restaurant',
+    previewUrl: extractField(answers, 'preview_url') || '',
+    company: extractField(answers, 'business_name') || extractField(answers, 'company') || clientSlug,
+    email: extractField(answers, 'email') || 'N/A',
+    phone: extractField(answers, 'phone') || '',
+    tier,
+    amount,
+    currency: extractField(answers, 'currency') || 'USD',
+    domain: extractField(answers, 'preferred_domain') || extractField(answers, 'domain') || '',
+    feedback: extractField(answers, 'feedback') || extractField(answers, 'requested_changes') || extractField(answers, 'launch_notes') || '',
+    referenceUrl: extractField(answers, 'reference_url') || '',
+    files: extractFiles(answers),
+  };
+}
+
+function classify(order: any) {
+  if (order.tier || order.amount) return 'sale';
+  return 'revision';
+}
+
+function buildDiscordPayload(kind: string, order: any) {
+  const isSale = kind === 'sale';
+  return {
+    username: isSale ? 'ProfitsLocal Sales' : 'ProfitsLocal Revisions',
+    embeds: [{
+      title: isSale ? `New sale: ${order.company}` : `Revision request: ${order.company}`,
+      color: isSale ? 0x2ecc71 : 0xf1c40f,
+      fields: compact([
+        field('Client', order.clientSlug, true),
+        field('Repo', order.repo, true),
+        field('Tier', order.tier, true),
+        field('Amount', order.amount ? `${order.currency} ${order.amount}` : '', true),
+        field('Email', order.email, true),
+        field('Phone', order.phone, true),
+        field('Domain', order.domain, true),
+        field('Preview', order.previewUrl, false),
+        field('Reference', order.referenceUrl, false),
+        field('Feedback', order.feedback, false, 950),
+        field('Files', order.files.join('\n'), false, 950),
+      ]),
+      timestamp: new Date().toISOString(),
+    }],
+  };
+}
+
+function field(name: string, value: string, inline = false, limit = 250) {
+  const normalized = String(value || '').trim();
+  if (!normalized || normalized === 'N/A' || normalized === 'unknown') return null;
+  return {
+    name,
+    value: normalized.length > limit ? `${normalized.slice(0, limit - 1)}...` : normalized,
+    inline,
+  };
+}
+
+function compact(values: any[]) {
+  return values.filter(Boolean).slice(0, 25);
+}
+
 function extractField(answers: any, fieldId: string): string {
   if (!answers) return '';
-  // Tally fields can be referenced by ID or label
+  const needle = fieldId.toLowerCase();
   for (const key of Object.keys(answers)) {
-    if (key.toLowerCase().includes(fieldId.toLowerCase())) {
-      const val = answers[key];
-      if (typeof val === 'string') return val;
-      if (val?.value) return String(val.value);
-      if (val?.text) return String(val.text);
-    }
+    if (!key.toLowerCase().includes(needle)) continue;
+    const value = answers[key];
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    if (value?.value !== undefined) return String(value.value);
+    if (value?.text !== undefined) return String(value.text);
+    if (value?.label !== undefined) return String(value.label);
   }
   return '';
 }
@@ -98,29 +123,18 @@ function extractField(answers: any, fieldId: string): string {
 function extractFiles(answers: any): string[] {
   const files: string[] = [];
   if (!answers) return files;
-
   for (const key of Object.keys(answers)) {
-    const val = answers[key];
-    if (val && typeof val === 'object') {
-      // Tally file upload format varies
-      if (val.url) files.push(val.url);
-      if (val.value && val.value.url) files.push(val.value.url);
-      if (Array.isArray(val)) {
-        val.forEach((f: any) => {
-          if (f.url) files.push(f.url);
-        });
-      }
-    }
+    const value = answers[key];
+    if (Array.isArray(value)) value.forEach((file) => file?.url && files.push(file.url));
+    if (value?.url) files.push(value.url);
+    if (value?.value?.url) files.push(value.value.url);
   }
   return files;
 }
 
-export const onRequest: PagesFunction = async (context) => {
-  if (context.request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-  return onRequestPost(context);
-};
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
