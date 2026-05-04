@@ -1,0 +1,40 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout title={`${post.data.title} - WebJuice`} description={post.data.description}>
+  <article class="max-w-2xl mx-auto">
+    <header class="mb-10">
+      <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
+        <span>{post.data.author}</span>
+        <span>&middot;</span>
+        <span>{post.data.pubDate.toLocaleDateString()}</span>
+      </div>
+      <h1 class="text-4xl font-bold mb-4">{post.data.title}</h1>
+      <p class="text-xl text-gray-600">{post.data.description}</p>
+      {post.data.tags?.length > 0 && (
+        <div class="flex gap-2 mt-4">
+          {post.data.tags.map(tag => (
+            <span class="text-xs bg-gray-100 px-3 py-1 rounded-full">{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+    
+    <div class="prose prose-gray max-w-none">
+      <Content />
+    </div>
+  </article>
+</Layout>

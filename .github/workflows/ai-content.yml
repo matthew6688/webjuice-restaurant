@@ -1,0 +1,32 @@
+name: AI Content Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Blog post topic'
+        required: true
+      slug:
+        description: 'URL slug (e.g. how-to-scale-b2b)'
+        required: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate content via API
+        run: |
+          # Hook this up to your AI agent API endpoint
+          # For now, this is a placeholder showing the automation flow
+          echo "Generating blog post about ${{ github.event.inputs.topic }}..."
+          echo "Save to src/content/blog/${{ github.event.inputs.slug }}.md"
+
+      - name: Commit and push
+        run: |
+          git config user.name "AI Agent"
+          git config user.email "agent@webjuice.com"
+          git add src/content/blog/
+          git diff --cached --quiet || git commit -m "content: add ${{ github.event.inputs.slug }}"
+          git push

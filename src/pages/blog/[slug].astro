@@ -1,0 +1,38 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { fetchPostBySlug, extractTextFromLexical } from '../../lib/payload.ts'
+
+export async function getStaticPaths() {
+  // During build, fetch all posts from Payload
+  const PAYLOAD_URL = import.meta.env.PAYLOAD_URL || 'http://localhost:3000'
+  const res = await fetch(`${PAYLOAD_URL}/api/posts?where[published][equals]=true`)
+  const data = await res.json()
+  const posts = data.docs || []
+  
+  return posts.map((post: any) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+const content = extractTextFromLexical(post.content)
+---
+
+<Layout title={`${post.title} — WebJuice`} description={post.excerpt}>
+  <article class="max-w-3xl mx-auto px-6 py-20">
+    <a href="/" class="text-sm text-slate-500 hover:text-slate-800 mb-8 inline-block">← Back home</a>
+    <h1 class="text-3xl font-bold tracking-tight mb-4">{post.title}</h1>
+    {post.publishedDate && (
+      <p class="text-sm text-slate-500 mb-8">
+        {new Date(post.publishedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+      </p>
+    )}
+    {post.excerpt && (
+      <p class="text-lg text-slate-600 leading-relaxed mb-8 border-l-4 border-slate-200 pl-4">{post.excerpt}</p>
+    )}
+    <div class="prose prose-slate max-w-none">
+      <p class="text-slate-800 leading-relaxed whitespace-pre-wrap">{content}</p>
+    </div>
+  </article>
+</Layout>

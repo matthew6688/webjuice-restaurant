@@ -1,0 +1,42 @@
+---
+import { siteConfig } from '../config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = siteConfig.description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+</head>
+<body class="bg-white text-gray-900 antialiased">
+  <nav class="border-b border-gray-100">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold tracking-tight">{siteConfig.name}</a>
+      <div class="flex gap-6 text-sm font-medium">
+        {siteConfig.navLinks.map(link => (
+          <a href={link.href} class="hover:text-gray-600">{link.label}</a>
+        ))}
+      </div>
+    </div>
+  </nav>
+  
+  <main class="max-w-4xl mx-auto px-6 py-12">
+    <slot />
+  </main>
+  
+  <footer class="border-t border-gray-100 mt-20">
+    <div class="max-w-4xl mx-auto px-6 py-8 text-sm text-gray-500">
+      &copy; {new Date().getFullYear()} {siteConfig.name}. {siteConfig.footer.text}
+    </div>
+  </footer>
+</body>
+</html>

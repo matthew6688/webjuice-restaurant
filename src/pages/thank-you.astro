@@ -1,0 +1,84 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+
+const repo = Astro.url.searchParams.get('repo') || '';
+const orderId = Astro.url.searchParams.get('order') || '';
+
+// These would come from your order system in production
+const estimatedDelivery = '24-48 hours';
+const devUrl = repo ? `https://${repo}-dev.pages.dev` : '#';
+---
+
+<Layout title={`Thank You - ${siteConfig.name}`} description="Order confirmation">
+  <div class="text-center py-16">
+    <div class="text-6xl mb-6">✅</div>
+    <h1 class="text-4xl font-bold mb-4">Order Received!</h1>
+    <p class="text-xl text-gray-600 mb-8">
+      Thank you for choosing {siteConfig.name}. We have received your order and will start working on it immediately.
+    </p>
+
+    {orderId && (
+      <div class="bg-gray-50 rounded-lg p-6 max-w-md mx-auto mb-8 text-left">
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-500">Order ID</span>
+          <span class="font-mono font-medium">{orderId}</span>
+        </div>
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-500">Estimated Delivery</span>
+          <span class="font-medium">{estimatedDelivery}</span>
+        </div>
+        {repo && (
+          <div class="flex justify-between">
+            <span class="text-gray-500">Preview URL</span>
+            <a href={devUrl} class="font-medium underline" target="_blank">{devUrl}</a>
+          </div>
+        )}
+      </div>
+    )}
+
+    <div class="max-w-2xl mx-auto text-left space-y-6">
+      <h2 class="text-2xl font-bold text-center">What happens next?</h2>
+
+      <div class="flex gap-4 items-start">
+        <div class="bg-gray-900 text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm font-bold">1</div>
+        <div>
+          <h3 class="font-semibold mb-1">We review your requirements</h3>
+          <p class="text-gray-600 text-sm">Our team reviews your brand info, logo, and modification requests within 2 hours.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4 items-start">
+        <div class="bg-gray-900 text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm font-bold">2</div>
+        <div>
+          <h3 class="font-semibold mb-1">Development begins</h3>
+          <p class="text-gray-600 text-sm">We customize your template with your brand colors, logo, and content. You will receive a preview link.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4 items-start">
+        <div class="bg-gray-900 text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm font-bold">3</div>
+        <div>
+          <h3 class="font-semibold mb-1">Review and feedback</h3>
+          <p class="text-gray-600 text-sm">Check the preview and send feedback. We offer up to 3 revision rounds.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4 items-start">
+        <div class="bg-gray-900 text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm font-bold">4</div>
+        <div>
+          <h3 class="font-semibold mb-1">Go live</h3>
+          <p class="text-gray-600 text-sm">Once approved, we connect your domain and your site goes live.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12 p-6 border border-gray-200 rounded-lg max-w-md mx-auto">
+      <h3 class="font-semibold mb-2">Questions?</h3>
+      <p class="text-gray-600 text-sm mb-4">Reply to your order confirmation email or contact us directly.</p>
+      <a href={`mailto:${siteConfig.email}`} class="text-blue-600 underline">
+        {siteConfig.email}
+      </a>
+    </div>
+  </div>
+</Layout>

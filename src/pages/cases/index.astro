@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const cases = await getCollection('cases', ({ data }) => !data.draft);
+const sorted = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Layout title="Case Studies - WebJuice">
+  <h1 class="text-4xl font-bold mb-4">Case Studies</h1>
+  <p class="text-gray-600 mb-12">Results we've delivered for B2B clients.</p>
+  
+  <div class="grid gap-8 md:grid-cols-2">
+    {sorted.map(c => (
+      <a href={`/cases/${c.slug}`} class="group block border border-gray-100 rounded-lg p-6 hover:border-gray-300">
+        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.data.industry}</span>
+        <h2 class="text-xl font-semibold group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h2>
+        <p class="text-gray-600 text-sm mb-4">{c.data.description}</p>
+        {c.data.results.length > 0 && (
+          <ul class="space-y-1">
+            {c.data.results.map(r => (
+              <li class="text-sm text-gray-700 flex items-center gap-2">
+                <span class="text-green-600">&check;</span> {r}
+              </li>
+            ))}
+          </ul>
+        )}
+      </a>
+    ))}
+  </div>
+</Layout>

@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const cases = await getCollection('cases', ({ data }) => !data.draft);
+const latestPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+const latestCases = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+---
+
+<Layout title={`${siteConfig.name} - ${siteConfig.tagline}`}>
+  <section class="py-16 text-center">
+    <h1 class="text-5xl font-bold tracking-tight mb-6">{siteConfig.tagline}</h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
+      {siteConfig.description}
+    </p>
+    <div class="flex justify-center gap-4">
+      <a href="/contact" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800">Get in Touch</a>
+      <a href="/cases" class="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50">View Cases</a>
+    </div>
+  </section>
+
+  <section class="py-16 border-t border-gray-100">
+    <h2 class="text-2xl font-bold mb-8">Latest Posts</h2>
+    <div class="grid gap-8 md:grid-cols-3">
+      {latestPosts.map(post => (
+        <a href={`/blog/${post.slug}`} class="group block">
+          <h3 class="font-semibold text-lg group-hover:text-gray-600 mb-2">{post.data.title}</h3>
+          <p class="text-gray-600 text-sm line-clamp-2">{post.data.description}</p>
+          <span class="text-xs text-gray-400 mt-2 block">{post.data.pubDate.toLocaleDateString()}</span>
+        </a>
+      ))}
+    </div>
+    <div class="mt-8">
+      <a href="/blog" class="text-sm font-medium underline underline-offset-4">View all posts &rarr;</a>
+    </div>
+  </section>
+
+  <section class="py-16 border-t border-gray-100">
+    <h2 class="text-2xl font-bold mb-8">Recent Cases</h2>
+    <div class="grid gap-8 md:grid-cols-2">
+      {latestCases.map(c => (
+        <a href={`/cases/${c.slug}`} class="group block p-6 border border-gray-100 rounded-lg hover:border-gray-300">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.data.industry}</span>
+          <h3 class="text-xl font-semibold group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h3>
+          <p class="text-gray-600 text-sm">{c.data.description}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>

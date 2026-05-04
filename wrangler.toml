@@ -1,0 +1,4 @@
+name = "webjuice-stack-mvp"
+compatibility_date = "2025-05-01"
+
+# This project name is overridden per-client via GitHub Actions variable PAGES_PROJECT_NAME

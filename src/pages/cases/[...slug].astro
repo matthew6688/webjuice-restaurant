@@ -1,0 +1,43 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const cases = await getCollection('cases');
+  return cases.map(c => ({
+    params: { slug: c.slug },
+    props: { caseStudy: c },
+  }));
+}
+
+const { caseStudy } = Astro.props;
+const { Content } = await caseStudy.render();
+---
+
+<Layout title={`${caseStudy.data.title} - WebJuice`} description={caseStudy.data.description}>
+  <article class="max-w-2xl mx-auto">
+    <header class="mb-10">
+      <span class="text-sm text-gray-500">{caseStudy.data.client} &middot; {caseStudy.data.industry}</span>
+      <h1 class="text-4xl font-bold mt-2 mb-4">{caseStudy.data.title}</h1>
+      <p class="text-xl text-gray-600">{caseStudy.data.description}</p>
+    </header>
+    
+    {caseStudy.data.results.length > 0 && (
+      <div class="bg-gray-50 rounded-lg p-6 mb-10">
+        <h3 class="font-semibold mb-4">Key Results</h3>
+        <ul class="space-y-2">
+          {caseStudy.data.results.map(r => (
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 mt-1">&check;</span>
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+    
+    <div class="prose prose-gray max-w-none">
+      <Content />
+    </div>
+  </article>
+</Layout>
