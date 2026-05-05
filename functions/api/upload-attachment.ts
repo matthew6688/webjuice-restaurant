@@ -53,10 +53,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const uploadForm = new FormData();
     uploadForm.set('file', file);
-    for (const [key, value] of Object.entries(uploadParams)) uploadForm.set(key, value);
     if (uploadPreset) {
+      uploadForm.set('folder', folder);
+      uploadForm.set('tags', uploadParams.tags);
+      uploadForm.set('context', uploadParams.context);
       uploadForm.set('upload_preset', uploadPreset);
     } else {
+      for (const [key, value] of Object.entries(uploadParams)) uploadForm.set(key, value);
       uploadForm.set('api_key', apiKey);
       uploadForm.set('signature', await signCloudinaryParams(uploadParams, apiSecret));
     }
