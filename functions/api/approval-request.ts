@@ -8,6 +8,7 @@ interface Env {
   AGENT_GITHUB_TOKEN?: string;
   AGENT_REPO?: string;
   AGENT_REF?: string;
+  APPROVAL_ALLOW_DRY_RUN?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -21,6 +22,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!orderId || !email || !clientSlug || !repo) {
       return json({ error: 'Order ID, checkout email, client, and repo are required.' }, 400);
     }
+    const dryRun = context.env.APPROVAL_ALLOW_DRY_RUN === 'true' && String(body.dry_run || '').toLowerCase() === 'true';
 
     const inputs = {
       client_slug: clientSlug,
@@ -30,7 +32,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       push: 'true',
       check_deploy: 'true',
       send_email: 'true',
-      dry_run: 'false',
+      send_discord: 'true',
+      dry_run: String(dryRun),
     };
 
     const webhookUrl = context.env.APPROVAL_DISCORD_WEBHOOK_URL || context.env.SALES_DISCORD_WEBHOOK_URL;

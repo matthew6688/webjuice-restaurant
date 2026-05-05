@@ -6,35 +6,104 @@ const tiers = checkout.tiers || [];
 const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || tiers[0];
 const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || tiers[1];
 const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || checkout.feedbackUrl);
+const hidden = checkout.hiddenFields || {};
+const clientSlug = hidden.client_slug || checkout.clientSlug || '';
+const repo = hidden.repo || '';
+const previewUrl = hidden.preview_url || '';
 ---
 
 {hasSalesBar && (
-  <aside class="preview-sales-bar" aria-label="Preview claim actions">
+  <aside
+    class="preview-sales-bar"
+    aria-label="Preview claim and order actions"
+    data-preview-sales-bar
+    data-client-slug={clientSlug}
+    data-repo={repo}
+    data-preview-url={previewUrl}
+  >
     <div class="preview-sales-inner">
       <div class="preview-sales-copy">
-        <strong>Preview ready</strong>
-        <span>Claim, revise, or maintain this site</span>
+        <strong data-sales-title>Preview ready</strong>
+        <span data-sales-subtitle>Claim, revise, or maintain this site</span>
       </div>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
         {oneTime?.purchaseUrl && (
-          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl} target="_blank">
+          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
             <span>Claim ${oneTime.amount}</span>
             <small>3 revisions</small>
           </a>
         )}
         {yearly?.purchaseUrl && (
-          <a class="preview-sales-button" href={yearly.purchaseUrl} target="_blank">
+          <a class="preview-sales-button" href={yearly.purchaseUrl} target="_blank" data-sales-mode>
             <span>${yearly.amount}/yr</span>
             <small>monthly care</small>
           </a>
         )}
+        <a class="preview-sales-button preview-sales-primary is-hidden" href="/approve" data-order-mode data-approve-link>
+          <span>Approve site</span>
+          <small>publish live</small>
+        </a>
+        <a class="preview-sales-button is-hidden" href="/revise" data-order-mode data-revise-link>
+          <span>Request revision</span>
+          <small data-revision-usage>check quota</small>
+        </a>
+        <a class="preview-sales-link is-hidden" href="/checkout?tier=extra_revision" data-order-mode data-extra-link>Buy extra revision</a>
         {checkout.feedbackUrl && (
-          <a class="preview-sales-link" href={checkout.feedbackUrl} target="_blank">Request changes</a>
+          <a class="preview-sales-link" href={checkout.feedbackUrl} target="_blank" data-sales-mode>Request changes</a>
         )}
       </nav>
     </div>
   </aside>
 )}
+
+<script>
+  const bar = document.querySelector('[data-preview-sales-bar]');
+  if (bar) {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order_id') || params.get('session_id') || '';
+    const email = params.get('email') || '';
+    const clientSlug = bar.getAttribute('data-client-slug') || params.get('client_slug') || '';
+    const repo = bar.getAttribute('data-repo') || params.get('repo') || '';
+    const previewUrl = bar.getAttribute('data-preview-url') || window.location.origin;
+    if (orderId && email) {
+      const shared = new URLSearchParams({
+        order_id: orderId,
+        email,
+        client_slug: clientSlug,
+        repo,
+        preview_url: previewUrl,
+      });
+      bar.querySelectorAll('[data-sales-mode]').forEach((element) => element.classList.add('is-hidden'));
+      bar.querySelectorAll('[data-order-mode]').forEach((element) => element.classList.remove('is-hidden'));
+      const title = bar.querySelector('[data-sales-title]');
+      const subtitle = bar.querySelector('[data-sales-subtitle]');
+      const approve = bar.querySelector('[data-approve-link]');
+      const revise = bar.querySelector('[data-revise-link]');
+      const extra = bar.querySelector('[data-extra-link]');
+      if (title) title.textContent = 'Review controls';
+      if (subtitle) subtitle.textContent = 'Approve or request changes from this dev preview';
+      if (approve) approve.setAttribute('href', `/approve?${shared.toString()}`);
+      if (revise) revise.setAttribute('href', `/revise?${shared.toString()}`);
+      if (extra) {
+        const extraParams = new URLSearchParams(shared);
+        extraParams.set('tier', 'extra_revision');
+        extra.setAttribute('href', `/checkout?${extraParams.toString()}`);
+      }
+      fetch('/api/order-status/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, email, client_slug: clientSlug, repo }),
+      })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          const usage = bar.querySelector('[data-revision-usage]');
+          if (!usage || !data?.revision) return;
+          usage.textContent = `${data.revision.used}/${data.revision.limit} used`;
+        })
+        .catch(() => {});
+    }
+  }
+</script>
 
 <style>
   :global(body:has(.preview-sales-bar)) {
@@ -107,6 +176,10 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
     white-space: nowrap;
   }
 
+  .is-hidden {
+    display: none !important;
+  }
+
   .preview-sales-button {
     gap: 0.32rem;
     border: 1px solid rgba(23, 18, 14, 0.16);
@@ -174,6 +247,18 @@ const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || check
 
     .preview-sales-button small {
       display: none;
+    }
+
+    .preview-sales-button[data-order-mode] {
+      gap: 0.28rem;
+    }
+
+    .preview-sales-button[data-order-mode] small {
+      display: inline;
+      max-width: 4.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .preview-sales-link {
