@@ -10,7 +10,7 @@ const checkout = loadCheckoutArtifact();
   <section class="revise-shell">
     <p class="eyebrow">Revision request</p>
     <h1>{content.hero.name}</h1>
-    <p class="lede">Enter the Stripe order ID from your confirmation page and the same email used at checkout. We match both before a revision task is created.</p>
+    <p class="lede">We match your Stripe order ID and checkout email before creating a revision task. When you open this page from your preview email, those two fields are locked so the task stays attached to the right order.</p>
 
     <div class="order-card" data-order-card hidden>
       <div>
@@ -42,12 +42,12 @@ const checkout = loadCheckoutArtifact();
 
       <label>
         Order ID
-        <input name="order_id" required placeholder="cs_test_..." autocomplete="off" />
+        <input name="order_id" required placeholder="cs_test_..." autocomplete="off" data-lockable />
       </label>
 
       <label>
         Checkout email
-        <input name="email" type="email" required placeholder="owner@example.com" />
+        <input name="email" type="email" required placeholder="owner@example.com" data-lockable />
       </label>
 
       <label class="wide">
@@ -59,6 +59,14 @@ const checkout = loadCheckoutArtifact();
         Reference URL or asset link
         <input name="reference_url" placeholder="Google Drive, Dropbox, website URL, or image link" />
       </label>
+
+      <label class="wide">
+        Attach files
+        <input name="attachments" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.md,.csv,.xls,.xlsx,.ppt,.pptx" data-attachments />
+        <span class="hint">Photos, menus, PDFs, documents, or screenshots. Use the change notes to tell us where each file should be used.</span>
+      </label>
+
+      <div class="attachment-list wide" data-attachment-list hidden></div>
 
       <button class="secondary" type="button" data-check-status>Check remaining revisions</button>
       <button type="submit">Submit revision request</button>
@@ -79,12 +87,23 @@ const checkout = loadCheckoutArtifact();
   const plan = document.querySelector('[data-plan]');
   const reset = document.querySelector('[data-reset]');
   const checkStatus = document.querySelector('[data-check-status]');
+  const attachmentInput = document.querySelector('[data-attachments]');
+  const attachmentList = document.querySelector('[data-attachment-list]');
   const prefill = {
     order_id: params.get('order_id') || params.get('session_id') || '',
     email: params.get('email') || '',
   };
   for (const [name, value] of Object.entries(prefill)) {
     if (value && form?.elements?.[name]) form.elements[name].value = value;
+  }
+  if (prefill.order_id && prefill.email) {
+    ['order_id', 'email'].forEach((name) => {
+      const field = form?.elements?.[name];
+      if (!field) return;
+      field.readOnly = true;
+      field.setAttribute('aria-readonly', 'true');
+      field.dataset.locked = 'true';
+    });
   }
   const extraLink = document.querySelector('[data-extra-link]');
   if (extraLink) {
@@ -144,10 +163,38 @@ const checkout = loadCheckoutArtifact();
   checkStatus?.addEventListener('click', loadOrderStatus);
   if (prefill.order_id && prefill.email) loadOrderStatus();
 
+  attachmentInput?.addEventListener('change', () => {
+    const files = Array.from(attachmentInput.files || []);
+    if (!attachmentList) return;
+    if (!files.length) {
+      attachmentList.hidden = true;
+      attachmentList.innerHTML = '';
+      return;
+    }
+    attachmentList.hidden = false;
+    attachmentList.innerHTML = files.map((file, index) => `
+      <div>
+        <strong>${index + 1}. ${escapeHtml(file.name)}</strong>
+        <span>${escapeHtml(file.type || 'file')} · ${formatBytes(file.size)}</span>
+      </div>
+    `).join('');
+  });
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     status.textContent = 'Submitting revision request...';
     const payload = Object.fromEntries(new FormData(form).entries());
+    const attachments = Array.from(attachmentInput?.files || []).map((file) => ({
+      name: file.name,
+      type: file.type || 'file',
+      size: file.size,
+    }));
+    if (attachments.length) {
+      payload.attachments = attachments;
+      payload.attachment_summary = attachments
+        .map((file, index) => `${index + 1}. ${file.name} (${file.type}, ${formatBytes(file.size)})`)
+        .join('\n');
+    }
     const response = await fetch('/api/revision-request/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -160,7 +207,28 @@ const checkout = loadCheckoutArtifact();
     }
     status.textContent = 'Revision request received. We will match your order ID and checkout email before creating the task.';
     form.reset();
+    if (attachmentList) {
+      attachmentList.hidden = true;
+      attachmentList.innerHTML = '';
+    }
   });
+
+  function formatBytes(value) {
+    const bytes = Number(value || 0);
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char] || char));
+  }
 </script>
 
 <style>
@@ -276,6 +344,44 @@ const checkout = loadCheckoutArtifact();
     color: #17120e;
     font: inherit;
     font-weight: 600;
+  }
+
+  input[data-locked='true'] {
+    background: #f3eee6;
+    color: #6c6258;
+    cursor: not-allowed;
+  }
+
+  input[type='file'] {
+    background: #fffdf8;
+  }
+
+  .hint {
+    color: #766a5f;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .attachment-list {
+    display: grid;
+    gap: 0.55rem;
+    border: 1px solid #ddd6cc;
+    background: #fffdf8;
+    padding: 0.85rem;
+  }
+
+  .attachment-list div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #665d55;
+    font-size: 0.92rem;
+  }
+
+  .attachment-list strong,
+  .attachment-list span {
+    overflow-wrap: anywhere;
   }
 
   button {

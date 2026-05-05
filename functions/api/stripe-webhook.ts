@@ -72,7 +72,7 @@ async function verifyStripeSignature(rawBody: string, header: string, secret: st
 
 function buildPaymentEmail(order: ReturnType<typeof normalizeCheckoutSession>) {
   const revisionUrl = order.previewUrl
-    ? `${order.previewUrl}/revise?order_id=${encodeURIComponent(order.orderId)}&email=${encodeURIComponent(order.email)}`
+    ? `${trimTrailingSlash(order.previewUrl)}/revise?order_id=${encodeURIComponent(order.orderId)}&email=${encodeURIComponent(order.email)}`
     : '';
   const lines = [
     `Order ID: ${order.orderId}`,
@@ -166,6 +166,10 @@ function escapeHtml(value: string) {
     '"': '&quot;',
     "'": '&#39;',
   }[char] || char));
+}
+
+function trimTrailingSlash(value: string) {
+  return String(value || '').replace(/\/+$/, '');
 }
 
 function hex(buffer: ArrayBuffer) {

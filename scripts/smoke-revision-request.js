@@ -45,6 +45,10 @@ const requestBody = {
   template: 'webjuice-restaurant',
   preview_url: 'https://opa-bar-mezze-restaurant-dev.pages.dev/',
   reference_url: 'https://example.com/reference',
+  attachments: [
+    { name: 'new-menu.pdf', type: 'application/pdf', size: 204800 },
+    { name: 'hero-photo.jpg', type: 'image/jpeg', size: 512000 },
+  ],
   dry_run: 'true',
 };
 const response = await onRequestPost({
@@ -81,9 +85,13 @@ const assertions = {
   honorsSafeDryRun: inputs.dry_run === 'true',
   carriesOrderAndEmail: fields.order_id === requestBody.order_id && fields.email === 'owner@example.com',
   carriesRequestedChanges: fields.requested_changes === requestBody.requested_changes,
+  carriesAttachmentSummary: String(fields.attachment_summary || '').includes('new-menu.pdf')
+    && String(fields.attachment_summary || '').includes('hero-photo.jpg'),
   carriesClientAndRepo: fields.client_slug === requestBody.client_slug && fields.repo === requestBody.repo,
   sendsRevisionDiscordNotice: discordMessages.length === 1,
+  discordNoticeShowsAttachments: JSON.stringify(discordMessages[0]?.body || {}).includes('new-menu.pdf'),
   sendsCustomerReceiptEmail: emails.length === 1,
+  emailShowsAttachments: JSON.stringify(emails[0]?.body || {}).includes('hero-photo.jpg'),
 };
 const failed = Object.entries(assertions)
   .filter(([, value]) => value !== true)
