@@ -12,7 +12,8 @@
     "astro": "astro",
     "apply:restaurant-artifacts": "node scripts/apply-client-artifacts.js",
     "smoke:approval-request": "node scripts/smoke-approval-request.js",
-    "smoke:revision-request": "node scripts/smoke-revision-request.js"
+    "smoke:revision-request": "node scripts/smoke-revision-request.js",
+    "smoke:upload-attachment": "node scripts/smoke-upload-attachment.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",

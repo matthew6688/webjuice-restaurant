@@ -182,19 +182,22 @@ const checkout = loadCheckoutArtifact();
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    status.textContent = 'Submitting revision request...';
     const payload = Object.fromEntries(new FormData(form).entries());
-    const attachments = Array.from(attachmentInput?.files || []).map((file) => ({
-      name: file.name,
-      type: file.type || 'file',
-      size: file.size,
-    }));
+    status.textContent = 'Uploading attachments...';
+    let attachments = [];
+    try {
+      attachments = await uploadAttachments(payload);
+    } catch (error) {
+      status.textContent = error?.message || 'Attachment upload failed.';
+      return;
+    }
     if (attachments.length) {
       payload.attachments = attachments;
       payload.attachment_summary = attachments
-        .map((file, index) => `${index + 1}. ${file.name} (${file.type}, ${formatBytes(file.size)})`)
+        .map((file, index) => `${index + 1}. ${file.name} (${file.type}, ${formatBytes(file.size)}) - ${file.url || 'uploaded'}`)
         .join('\n');
     }
+    status.textContent = 'Submitting revision request...';
     const response = await fetch('/api/revision-request/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -212,6 +215,30 @@ const checkout = loadCheckoutArtifact();
       attachmentList.innerHTML = '';
     }
   });
+
+  async function uploadAttachments(payload) {
+    const files = Array.from(attachmentInput?.files || []);
+    if (!files.length) return [];
+    const uploaded = [];
+    for (const [index, file] of files.entries()) {
+      status.textContent = `Uploading attachment ${index + 1} of ${files.length}: ${file.name}`;
+      const formData = new FormData();
+      formData.set('file', file);
+      formData.set('order_id', payload.order_id || '');
+      formData.set('email', payload.email || '');
+      formData.set('client_slug', payload.client_slug || '');
+      const response = await fetch('/api/upload-attachment/', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Could not upload ${file.name}.`);
+      }
+      uploaded.push(data);
+    }
+    return uploaded;
+  }
 
   function formatBytes(value) {
     const bytes = Number(value || 0);
