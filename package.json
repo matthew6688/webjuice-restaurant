@@ -13,6 +13,8 @@
     "apply:restaurant-artifacts": "node scripts/apply-client-artifacts.js",
     "smoke:approval-request": "node scripts/smoke-approval-request.js",
     "smoke:revision-request": "node scripts/smoke-revision-request.js",
+    "smoke:domain-request": "node scripts/smoke-domain-request.js",
+    "smoke:domain-status": "node scripts/smoke-domain-status.js",
     "smoke:upload-attachment": "node scripts/smoke-upload-attachment.js"
   },
   "dependencies": {

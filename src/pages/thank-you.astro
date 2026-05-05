@@ -27,7 +27,8 @@ import { siteConfig } from '../config/site';
           <strong> menu.yourbusiness.com</strong>. If you already entered a domain, we will use that as the starting point.
         </p>
         <p class="note" data-domain-note hidden>Submitted domain: <strong data-domain></strong></p>
-        <a class="action-link" href="/domain-help" data-domain-help-link>Domain setup guide</a>
+        <a class="action-link" href="/domain-setup" data-domain-setup-link>Start domain setup</a>
+        <a class="action-link secondary" href="/domain-help" data-domain-help-link>Domain setup guide</a>
       </article>
 
       <article>
@@ -135,6 +136,16 @@ import { siteConfig } from '../config/site';
     if (values.domain) domainHelpUrl.searchParams.set('domain', values.domain);
     if (values.previewUrl) domainHelpUrl.searchParams.set('preview_url', values.previewUrl);
     domainHelpLink.href = domainHelpUrl.toString();
+  }
+
+  const domainSetupLink = document.querySelector('[data-domain-setup-link]');
+  if (domainSetupLink) {
+    const domainSetupUrl = new URL('/domain-setup', window.location.origin);
+    if (values.clientSlug) domainSetupUrl.searchParams.set('client_slug', values.clientSlug);
+    if (values.order) domainSetupUrl.searchParams.set('order_id', values.order);
+    if (values.email) domainSetupUrl.searchParams.set('email', values.email);
+    if (values.domain) domainSetupUrl.searchParams.set('domain', values.domain);
+    domainSetupLink.href = domainSetupUrl.toString();
   }
 
   if (values.feedbackUrl) {

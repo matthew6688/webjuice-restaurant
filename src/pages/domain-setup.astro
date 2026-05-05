@@ -1,0 +1,320 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+---
+
+<Layout title={`Domain Launch - ${siteConfig.name}`} description="Choose and track your launch domain">
+  <section class="domain-shell">
+    <p class="eyebrow">Domain launch</p>
+    <h1>Set the public address for your approved site.</h1>
+    <p class="lede">
+      Pick the route that matches your DNS access. We can fully automate ProfitsLocal subdomains.
+      Customer subdomains need one CNAME record. Root domains need a DNS and email safety check first.
+    </p>
+
+    <form class="domain-form" data-domain-form>
+      <input type="hidden" name="client_slug" data-client-slug />
+      <input type="hidden" name="project" data-project />
+      <label>
+        Order ID
+        <input name="order_id" required autocomplete="off" />
+      </label>
+      <label>
+        Checkout email
+        <input name="email" required type="email" autocomplete="email" />
+      </label>
+      <fieldset>
+        <legend>Launch route</legend>
+        <label class="choice">
+          <input type="radio" name="route" value="profitslocal" checked />
+          <span>Free ProfitsLocal subdomain</span>
+          <small>No customer DNS. We create and attach it.</small>
+        </label>
+        <label class="choice">
+          <input type="radio" name="route" value="subdomain" />
+          <span>My own subdomain</span>
+          <small>Example: menu.myrestaurant.com</small>
+        </label>
+        <label class="choice">
+          <input type="radio" name="route" value="root" />
+          <span>My root domain</span>
+          <small>Example: myrestaurant.com. Requires audit before launch.</small>
+        </label>
+      </fieldset>
+      <label>
+        Domain
+        <input name="domain" data-domain-input autocomplete="off" />
+      </label>
+      <button type="submit">Start domain setup</button>
+    </form>
+
+    <div class="status-panel" data-status-panel hidden>
+      <span>Status</span>
+      <h2 data-status-title></h2>
+      <p data-status-copy></p>
+      <div class="record-box" data-record-box hidden>
+        <strong>DNS record</strong>
+        <code data-record></code>
+      </div>
+      <ol data-steps></ol>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const values = {
+    clientSlug: params.get('client_slug') || '',
+    orderId: params.get('order_id') || params.get('order') || params.get('session_id') || '',
+    email: params.get('email') || '',
+    domain: cleanDomain(params.get('domain') || params.get('preferred_domain') || ''),
+  };
+  if (!values.clientSlug && location.hostname.endsWith('-dev.pages.dev')) {
+    values.clientSlug = location.hostname.replace(/-dev\.pages\.dev$/, '');
+  }
+
+  const form = document.querySelector('[data-domain-form]');
+  const domainInput = document.querySelector('[data-domain-input]');
+  const clientInput = document.querySelector('[data-client-slug]');
+  const projectInput = document.querySelector('[data-project]');
+  if (clientInput) clientInput.value = values.clientSlug;
+  if (projectInput) projectInput.value = values.clientSlug ? `${values.clientSlug}-live` : '';
+  setFormValue('order_id', values.orderId);
+  setFormValue('email', values.email);
+  if (domainInput) domainInput.value = values.domain || defaultSubdomain();
+
+  document.querySelectorAll('input[name="route"]').forEach((node) => {
+    node.addEventListener('change', () => {
+      if (!domainInput) return;
+      if (node.checked && node.value === 'profitslocal') domainInput.value = defaultSubdomain();
+      if (node.checked && node.value === 'subdomain') domainInput.value = domainInput.value.includes('.profitslocal.com') ? '' : domainInput.value;
+      if (node.checked && node.value === 'root') domainInput.value = domainInput.value.includes('.profitslocal.com') ? '' : domainInput.value;
+    });
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.domain = cleanDomain(payload.domain || '');
+    showStatus('Submitting', 'Starting domain setup...');
+    const response = await fetch('/api/domain-request/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json();
+    if (!response.ok || !body.success) {
+      showStatus('Could not start', body.error || 'Please try again.');
+      return;
+    }
+    renderQueued(body);
+    pollStatus(body.requestId, payload.client_slug);
+  });
+
+  function renderQueued(body) {
+    const route = body.route || {};
+    showStatus('Queued', route.message || 'Domain setup request was queued.');
+    renderRecord(route.domain || body.domain, body.target);
+  }
+
+  async function pollStatus(requestId, clientSlug) {
+    for (let i = 0; i < 10; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, i < 2 ? 3000 : 8000));
+      const response = await fetch('/api/domain-status/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request_id: requestId, client_slug: clientSlug }),
+      });
+      const body = await response.json();
+      if (!response.ok) continue;
+      renderStatus(body);
+      if (['active', 'waiting_for_customer_dns', 'needs_root_domain_review', 'needs_router'].includes(body.status)) break;
+    }
+  }
+
+  function renderStatus(body) {
+    const title = statusTitle(body.status);
+    const copy = statusCopy(body);
+    showStatus(title, copy);
+    renderRecord(body.domain, body.target);
+    const steps = document.querySelector('[data-steps]');
+    if (steps) {
+      steps.innerHTML = '';
+      (body.steps || []).forEach((step) => {
+        const item = document.createElement('li');
+        item.textContent = `${step.ok ? 'Done' : 'Waiting'}: ${step.message}`;
+        steps.append(item);
+      });
+    }
+  }
+
+  function renderRecord(domain, target) {
+    const box = document.querySelector('[data-record-box]');
+    const record = document.querySelector('[data-record]');
+    if (!box || !record || !domain || !target) return;
+    record.textContent = `${domain} CNAME ${target}`;
+    box.hidden = false;
+  }
+
+  function showStatus(title, copy) {
+    const panel = document.querySelector('[data-status-panel]');
+    if (panel) panel.hidden = false;
+    const titleNode = document.querySelector('[data-status-title]');
+    const copyNode = document.querySelector('[data-status-copy]');
+    if (titleNode) titleNode.textContent = title;
+    if (copyNode) copyNode.textContent = copy;
+  }
+
+  function statusTitle(status) {
+    if (status === 'active') return 'Domain is live';
+    if (status === 'pages_pending') return 'Certificate pending';
+    if (status === 'waiting_for_customer_dns') return 'Waiting for DNS';
+    if (status === 'needs_root_domain_review') return 'Root domain review needed';
+    if (status === 'needs_router') return 'Router needed';
+    return 'Queued';
+  }
+
+  function statusCopy(body) {
+    if (body.status === 'active') return `${body.domain} is attached and active.`;
+    if (body.status === 'pages_pending') return `${body.domain} is attached. Cloudflare is validating HTTPS.`;
+    if (body.status === 'waiting_for_customer_dns') return 'Add the CNAME record shown below. We will attach it after DNS points at the Pages target.';
+    if (body.status === 'needs_root_domain_review') return 'Root domains can affect an existing website and email. We will inspect DNS before changing anything.';
+    if (body.status === 'needs_router') return 'ProfitsLocal path routing is not active yet. Use a subdomain for production launch.';
+    return 'The request is queued. This page will update when the backend writes status.';
+  }
+
+  function setFormValue(name, value) {
+    const input = form?.querySelector(`[name="${name}"]`);
+    if (input && value) input.value = value;
+  }
+
+  function defaultSubdomain() {
+    return values.clientSlug ? `${values.clientSlug}.profitslocal.com` : '';
+  }
+
+  function cleanDomain(value) {
+    return String(value || '').trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').replace(/\.$/, '').toLowerCase();
+  }
+</script>
+
+<style>
+  .domain-shell {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  .eyebrow {
+    color: #b9802f;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 780px;
+    margin-top: 0.8rem;
+    color: #17120e;
+    font-size: clamp(2.8rem, 7vw, 5.8rem);
+    font-weight: 950;
+    line-height: 0.92;
+  }
+
+  .lede {
+    max-width: 720px;
+    color: #665d55;
+    font-size: 1.05rem;
+    line-height: 1.75;
+  }
+
+  .domain-form,
+  .status-panel {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+    border: 1px solid #ddd6cc;
+    background: #fffdf8;
+    padding: clamp(1rem, 3vw, 1.8rem);
+  }
+
+  label,
+  legend {
+    color: #17120e;
+    font-weight: 900;
+  }
+
+  input {
+    width: 100%;
+    margin-top: 0.45rem;
+    border: 1px solid #d5cabe;
+    background: #fff;
+    padding: 0.85rem;
+    color: #17120e;
+    font: inherit;
+  }
+
+  fieldset {
+    display: grid;
+    gap: 0.75rem;
+    border: 1px solid #e0d8ce;
+    padding: 1rem;
+  }
+
+  .choice {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.35rem 0.65rem;
+  }
+
+  .choice input {
+    width: auto;
+    margin-top: 0.2rem;
+  }
+
+  .choice small {
+    grid-column: 2;
+  }
+
+  button {
+    width: fit-content;
+    border: 0;
+    background: #17120e;
+    color: #fffdf8;
+    padding: 0.9rem 1.2rem;
+    font-weight: 950;
+    cursor: pointer;
+  }
+
+  .status-panel {
+    background: #17120e;
+    border-color: #17120e;
+  }
+
+  .status-panel span,
+  .status-panel h2,
+  .status-panel p,
+  .status-panel li {
+    color: #fffdf8;
+  }
+
+  .record-box {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.9rem;
+    background: #f3eee6;
+  }
+
+  code {
+    overflow-wrap: anywhere;
+    color: #17120e;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    line-height: 1.5;
+  }
+
+  small,
+  li {
+    color: #665d55;
+    line-height: 1.5;
+  }
+</style>
