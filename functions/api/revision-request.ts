@@ -12,6 +12,7 @@ interface Env {
   AGENT_REF?: string;
   RESEND_API_KEY?: string;
   FROM_EMAIL?: string;
+  REVISION_ALLOW_DRY_RUN?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -24,6 +25,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!orderId || !email || !requestedChanges) {
       return json({ error: 'Order ID, checkout email, and requested changes are required.' }, 400);
     }
+    const dryRun = context.env.REVISION_ALLOW_DRY_RUN === 'true' && String(body.dry_run || '').toLowerCase() === 'true';
 
     const payload = {
       id: `rev_${Date.now()}`,
@@ -43,7 +45,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const webhookUrl = context.env.REVISE_DISCORD_WEBHOOK_URL || context.env.DISCORD_WEBHOOK_URL;
     if (webhookUrl) context.waitUntil(sendJson(webhookUrl, buildDiscordPayload(payload.fields)));
     context.waitUntil(sendCustomerEmail(context.env, buildRevisionReceivedEmail(payload.fields)));
-    context.waitUntil(dispatchFunnelEvent(context.env, { provider: 'tally', payload }));
+    context.waitUntil(dispatchFunnelEvent(context.env, { provider: 'tally', payload, dryRun }));
 
     return json({ success: true, clientSlug: payload.fields.client_slug, repo: payload.fields.repo });
   } catch (error) {
