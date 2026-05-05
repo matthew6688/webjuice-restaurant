@@ -82,3 +82,66 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (failed.length) process.exit(1);
+
+uploads.length = 0;
+globalThis.fetch = async (url, options = {}) => {
+  if (String(url).includes('api.cloudinary.com')) {
+    const form = options.body;
+    uploads.push({
+      url: String(url),
+      apiKey: form?.get?.('api_key'),
+      signature: form?.get?.('signature'),
+      uploadPreset: form?.get?.('upload_preset'),
+      hasFile: form?.get?.('file') instanceof File,
+    });
+    return new Response(JSON.stringify({
+      asset_id: 'asset_revision_unsigned_001',
+      bytes: 18,
+      format: 'txt',
+      public_id: 'profitslocal/revision-attachments/fixture-unsigned',
+      resource_type: 'raw',
+      secure_url: 'https://res.cloudinary.com/demo/raw/upload/profitslocal/revision-attachments/fixture-unsigned.txt',
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  return originalFetch(url, options);
+};
+
+const unsignedForm = new FormData();
+unsignedForm.set('file', new File(['hello unsigned file'], 'unsigned-menu.txt', { type: 'text/plain' }));
+unsignedForm.set('client_slug', 'Opa Bar & Mezze Restaurant');
+unsignedForm.set('order_id', 'cs_test_cloudinary_unsigned_001');
+const unsignedResponse = await onRequestPost({
+  request: new Request('https://opa-bar-mezze-restaurant-dev.pages.dev/api/upload-attachment/', {
+    method: 'POST',
+    body: unsignedForm,
+  }),
+  env: {
+    CLOUDINARY_CLOUD_NAME: 'demo',
+    CLOUDINARY_UPLOAD_PRESET: 'revision_unsigned',
+    CLOUDINARY_UPLOAD_FOLDER: 'profitslocal/revision-attachments',
+  },
+  waitUntil() {},
+});
+const unsignedBody = await unsignedResponse.json();
+globalThis.fetch = originalFetch;
+const unsignedUpload = uploads[0] || {};
+const unsignedAssertions = {
+  responseOk: unsignedResponse.ok && unsignedBody.success === true,
+  usesUploadPreset: unsignedUpload.uploadPreset === 'revision_unsigned',
+  omitsSignedCredentials: !unsignedUpload.apiKey && !unsignedUpload.signature,
+  sendsFile: unsignedUpload.hasFile === true,
+};
+const unsignedFailed = Object.entries(unsignedAssertions)
+  .filter(([, value]) => value !== true)
+  .map(([key]) => key);
+
+console.log(JSON.stringify({
+  ok: unsignedFailed.length === 0,
+  mode: 'unsigned',
+  assertions: unsignedAssertions,
+  failed: unsignedFailed,
+  upload: unsignedUpload,
+  response: unsignedBody,
+}, null, 2));
+
+if (unsignedFailed.length) process.exit(1);

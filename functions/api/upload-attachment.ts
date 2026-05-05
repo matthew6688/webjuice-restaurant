@@ -4,6 +4,7 @@ interface Env {
   CLOUDINARY_CLOUD_NAME?: string;
   CLOUDINARY_API_KEY?: string;
   CLOUDINARY_API_SECRET?: string;
+  CLOUDINARY_UPLOAD_PRESET?: string;
   CLOUDINARY_UPLOAD_FOLDER?: string;
   CLOUDINARY_UPLOAD_MAX_BYTES?: string;
 }
@@ -15,7 +16,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const cloudName = String(context.env.CLOUDINARY_CLOUD_NAME || '').trim();
     const apiKey = String(context.env.CLOUDINARY_API_KEY || '').trim();
     const apiSecret = String(context.env.CLOUDINARY_API_SECRET || '').trim();
-    if (!cloudName || !apiKey || !apiSecret) {
+    const uploadPreset = String(context.env.CLOUDINARY_UPLOAD_PRESET || '').trim();
+    if (!cloudName || (!uploadPreset && (!apiKey || !apiSecret))) {
       return json({ error: 'Attachment uploads are not configured.' }, 503);
     }
 
@@ -48,13 +50,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       unique_filename: 'true',
       use_filename: 'true',
     };
-    const signature = await signCloudinaryParams(uploadParams, apiSecret);
 
     const uploadForm = new FormData();
     uploadForm.set('file', file);
-    uploadForm.set('api_key', apiKey);
     for (const [key, value] of Object.entries(uploadParams)) uploadForm.set(key, value);
-    uploadForm.set('signature', signature);
+    if (uploadPreset) {
+      uploadForm.set('upload_preset', uploadPreset);
+    } else {
+      uploadForm.set('api_key', apiKey);
+      uploadForm.set('signature', await signCloudinaryParams(uploadParams, apiSecret));
+    }
 
     const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/auto/upload`, {
       method: 'POST',
