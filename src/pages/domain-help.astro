@@ -6,77 +6,191 @@ import { siteConfig } from '../config/site';
 <Layout title={`Domain Setup - ${siteConfig.name}`} description="Domain and subdomain setup instructions">
   <section class="domain-shell">
     <p class="eyebrow">Domain setup</p>
-    <h1>Connect your domain after preview approval.</h1>
+    <h1>Choose the launch address before we publish live.</h1>
     <p class="lede">
-      Keep using this preview site for approval and revision requests. For launch, choose the address that fits how
-      fast you want to go live and how much DNS control you have.
+      The dev preview stays available for approval and revisions. The public live site needs one clear address.
+      Some options are handled by us; others require a DNS change from your domain manager.
     </p>
+
+    <div class="current-panel" data-current-panel hidden>
+      <span>Current request</span>
+      <h2 data-current-domain></h2>
+      <p data-current-copy></p>
+      <dl>
+        <div data-client-row hidden><dt>Client</dt><dd data-client></dd></div>
+        <div data-target-row hidden><dt>Pages target</dt><dd data-target></dd></div>
+        <div data-preview-row hidden><dt>Dev preview</dt><dd><a data-preview target="_blank"></a></dd></div>
+      </dl>
+    </div>
 
     <div class="domain-grid">
       <article>
-        <span>Fastest</span>
-        <h2>ProfitsLocal page</h2>
-        <p>Use a page on our root domain, such as <strong>profitslocal.com/yourbusiness</strong>.</p>
-        <ul>
-          <li>No DNS change from you.</li>
-          <li>Best for quick launch, proof, or temporary approval.</li>
-          <li>You can move to your own domain later.</li>
-        </ul>
-      </article>
-
-      <article>
-        <span>Recommended fast launch</span>
-        <h2>ProfitsLocal subdomain</h2>
+        <span>Default / no customer DNS</span>
+        <h2>Free ProfitsLocal subdomain</h2>
         <p>Use a dedicated address under our domain, such as <strong>yourbusiness.profitslocal.com</strong>.</p>
         <ul>
-          <li>No registrar login needed from you.</li>
-          <li>Cleaner than a subpage for QR codes, menus, and outreach.</li>
-          <li>Usually the easiest option if you want us to handle launch end to end.</li>
+          <li>You do not log in to a registrar.</li>
+          <li>We create the DNS record and attach it to the approved live Pages project.</li>
+          <li>Best for fast launch, QR codes, menus, and outreach links.</li>
         </ul>
+        <div class="record-box" data-free-record hidden>
+          <strong>For this order</strong>
+          <code data-free-domain></code>
+          <small>We must configure this before it opens. If it does not resolve yet, it is pending setup or certificate validation.</small>
+        </div>
       </article>
 
       <article>
-        <span>Customer domain</span>
-        <h2>Root domain</h2>
+        <span>Customer DNS / safest</span>
+        <h2>Your subdomain</h2>
+        <p>Use a focused address, such as <strong>menu.yourbusiness.com</strong> or <strong>order.yourbusiness.com</strong>.</p>
+        <ul>
+          <li>Best if you already have an official website.</li>
+          <li>Customer adds one CNAME record.</li>
+          <li>We attach the custom domain in Cloudflare Pages after DNS resolves.</li>
+        </ul>
+        <div class="record-box">
+          <strong>DNS record</strong>
+          <code><span data-subdomain-name>menu.yourbusiness.com</span> CNAME <span data-pages-target>your-project-live.pages.dev</span></code>
+          <small>If your DNS is on Cloudflare, leave the record proxied or DNS-only according to your existing policy; the important part is the CNAME target.</small>
+        </div>
+      </article>
+
+      <article>
+        <span>Official replacement</span>
+        <h2>Your root domain</h2>
         <p>Use your main website address, such as <strong>yourbusiness.com</strong>.</p>
         <ul>
           <li>Best when this will replace your official website.</li>
-          <li>You or your domain manager add the DNS record we provide.</li>
-          <li>After DNS resolves, we verify HTTPS and publish the final link.</li>
+          <li>Cloudflare DNS can use a flattened CNAME at the root.</li>
+          <li>Other registrars may need ALIAS/ANAME, or use <strong>www.yourbusiness.com</strong> and redirect the root.</li>
         </ul>
+        <div class="record-box">
+          <strong>Preferred DNS records</strong>
+          <code>@ CNAME <span data-pages-target>your-project-live.pages.dev</span></code>
+          <code>www CNAME <span data-pages-target>your-project-live.pages.dev</span></code>
+          <small>Root domains are slower because we must avoid breaking existing email, website, or registrar settings.</small>
+        </div>
       </article>
 
       <article>
-        <span>Customer subdomain</span>
-        <h2>Subdomain</h2>
-        <p>Use a focused address, such as <strong>menu.yourbusiness.com</strong> or <strong>order.yourbusiness.com</strong>.</p>
+        <span>Not the launch path yet</span>
+        <h2>ProfitsLocal subpage</h2>
+        <p>Use a path such as <strong>profitslocal.com/yourbusiness</strong>.</p>
         <ul>
-          <li>This is useful when you already have an official website.</li>
-          <li>It is also safer for a menu-only or campaign-specific page.</li>
-          <li>The preview utility pages can remain available for revisions.</li>
+          <li>No DNS change from the customer.</li>
+          <li>Useful later for a directory, case study, or temporary listing.</li>
+          <li>Not currently the production website launch route unless we build the root-site router.</li>
         </ul>
       </article>
     </div>
 
     <div class="handoff-panel">
-      <h2>What to send us</h2>
-      <p>Tell us which option you prefer. If you want your own domain or subdomain, also send the registrar/DNS provider name and whether you want guided steps or for us to make the DNS change.</p>
+      <h2>What happens after approval</h2>
+      <ol>
+        <li>You approve the dev preview.</li>
+        <li>We confirm the launch address and Pages project target.</li>
+        <li>For a ProfitsLocal subdomain, we create DNS and attach the custom domain ourselves.</li>
+        <li>For your own domain or subdomain, you add the DNS record or invite us to help.</li>
+        <li>We wait for Cloudflare Pages domain status and HTTPS certificate to become active.</li>
+        <li>We send the final live link. The preview utility pages remain available for revisions.</li>
+      </ol>
       <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
     </div>
 
     <div class="steps-panel">
-      <h2>Own-domain DNS steps</h2>
-      <ol>
-        <li>Approve the dev preview.</li>
-        <li>Tell us the exact domain or subdomain you want to use.</li>
-        <li>We send the exact DNS target for your project.</li>
-        <li>You add a CNAME record at your DNS provider, or invite us to help.</li>
-        <li>We verify the Cloudflare Pages custom domain and HTTPS certificate.</li>
-        <li>We publish the live link and keep the preview utility page available for revisions.</li>
-      </ol>
+      <h2>Rule of thumb</h2>
+      <p><strong>Fastest:</strong> use our free <span data-client-subdomain>client.profitslocal.com</span> subdomain.</p>
+      <p><strong>Best when you already have a website:</strong> use a customer subdomain like <strong>menu.yourbusiness.com</strong>.</p>
+      <p><strong>Best for a full replacement:</strong> use the root domain after checking existing DNS, email, and website records.</p>
     </div>
   </section>
 </Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const clientSlug = params.get('client_slug') || '';
+  const requestedDomain = cleanDomain(params.get('domain') || params.get('preferred_domain') || '');
+  const previewUrl = params.get('preview_url') || (clientSlug ? `https://${clientSlug}-dev.pages.dev` : '');
+  const liveProject = clientSlug ? `${clientSlug}-live` : 'your-project-live';
+  const pagesTarget = `${liveProject}.pages.dev`;
+  const defaultSubdomain = clientSlug ? `${clientSlug}.profitslocal.com` : 'client.profitslocal.com';
+  const selectedDomain = requestedDomain || defaultSubdomain;
+  const route = classifyDomain(selectedDomain);
+
+  setText('[data-pages-target]', pagesTarget);
+  setText('[data-client-subdomain]', defaultSubdomain);
+  setText('[data-subdomain-name]', route.kind === 'customer-subdomain' ? selectedDomain : 'menu.yourbusiness.com');
+
+  const panel = document.querySelector('[data-current-panel]');
+  if (panel && (clientSlug || selectedDomain || previewUrl)) {
+    panel.hidden = false;
+    setText('[data-current-domain]', selectedDomain);
+    setText('[data-current-copy]', route.copy);
+    setText('[data-client]', clientSlug || 'Not provided');
+    setText('[data-target]', pagesTarget);
+    showRow('[data-client-row]', Boolean(clientSlug));
+    showRow('[data-target-row]', Boolean(clientSlug));
+    const preview = document.querySelector('[data-preview]');
+    if (preview && previewUrl) {
+      preview.textContent = previewUrl;
+      preview.href = previewUrl;
+      showRow('[data-preview-row]', true);
+    }
+  }
+
+  if (route.kind === 'profitslocal-subdomain') {
+    const record = document.querySelector('[data-free-record]');
+    if (record) record.hidden = false;
+    setText('[data-free-domain]', `${selectedDomain} -> ${pagesTarget}`);
+  }
+
+  function classifyDomain(value) {
+    const host = cleanDomain(value);
+    if (!host) {
+      return {
+        kind: 'profitslocal-subdomain',
+        copy: 'No domain was requested, so the fastest route is a free ProfitsLocal subdomain that we configure.',
+      };
+    }
+    if (host === 'profitslocal.com' || host.endsWith('.profitslocal.com')) {
+      return {
+        kind: 'profitslocal-subdomain',
+        copy: 'This is under our domain. We configure DNS and Cloudflare Pages; no customer DNS change is needed.',
+      };
+    }
+    if (host.split('.').length > 2) {
+      return {
+        kind: 'customer-subdomain',
+        copy: `Ask the domain manager to add a CNAME from ${host} to ${pagesTarget}.`,
+      };
+    }
+    return {
+      kind: 'customer-root',
+      copy: `This is a root domain. We need to inspect existing DNS first, then choose Cloudflare flattened CNAME, ALIAS/ANAME, or www redirect.`,
+    };
+  }
+
+  function cleanDomain(value) {
+    return String(value || '')
+      .trim()
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '')
+      .replace(/\.$/, '')
+      .toLowerCase();
+  }
+
+  function setText(selector, value) {
+    document.querySelectorAll(selector).forEach((node) => {
+      node.textContent = value;
+    });
+  }
+
+  function showRow(selector, show) {
+    const row = document.querySelector(selector);
+    if (row) row.hidden = !show;
+  }
+</script>
 
 <style>
   .domain-shell {
@@ -118,6 +232,7 @@ import { siteConfig } from '../config/site';
   }
 
   article,
+  .current-panel,
   .handoff-panel,
   .steps-panel {
     border: 1px solid #ddd6cc;
@@ -125,12 +240,47 @@ import { siteConfig } from '../config/site';
     padding: clamp(1rem, 3vw, 1.8rem);
   }
 
+  .current-panel {
+    margin-top: 2rem;
+    background: #17120e;
+    border-color: #17120e;
+  }
+
+  .current-panel span,
   article span {
     color: #b9802f;
     font-size: 0.75rem;
     font-weight: 950;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  .current-panel h2,
+  .current-panel p,
+  .current-panel dt,
+  .current-panel dd,
+  .current-panel a {
+    color: #fffdf8;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+  }
+
+  dt {
+    color: #8e8378;
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.2rem 0 0;
+    overflow-wrap: anywhere;
   }
 
   h2 {
@@ -147,6 +297,28 @@ import { siteConfig } from '../config/site';
 
   ul {
     padding-left: 1.1rem;
+  }
+
+  .record-box {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 1rem;
+    padding: 0.9rem;
+    background: #f3eee6;
+  }
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #17120e;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  small {
+    color: #665d55;
+    line-height: 1.5;
   }
 
   .handoff-panel {
@@ -169,6 +341,10 @@ import { siteConfig } from '../config/site';
 
   @media (max-width: 760px) {
     .domain-grid {
+      grid-template-columns: 1fr;
+    }
+
+    dl {
       grid-template-columns: 1fr;
     }
   }

@@ -27,7 +27,7 @@ import { siteConfig } from '../config/site';
           <strong> menu.yourbusiness.com</strong>. If you already entered a domain, we will use that as the starting point.
         </p>
         <p class="note" data-domain-note hidden>Submitted domain: <strong data-domain></strong></p>
-        <a class="action-link" href="/domain-help">Domain setup guide</a>
+        <a class="action-link" href="/domain-help" data-domain-help-link>Domain setup guide</a>
       </article>
 
       <article>
@@ -126,6 +126,15 @@ import { siteConfig } from '../config/site';
     if (values.clientSlug) feedbackUrl.searchParams.set('client_slug', values.clientSlug);
     if (values.repo) feedbackUrl.searchParams.set('repo', values.repo);
     values.feedbackUrl = feedbackUrl.toString();
+  }
+
+  const domainHelpLink = document.querySelector('[data-domain-help-link]');
+  if (domainHelpLink) {
+    const domainHelpUrl = new URL('/domain-help', window.location.origin);
+    if (values.clientSlug) domainHelpUrl.searchParams.set('client_slug', values.clientSlug);
+    if (values.domain) domainHelpUrl.searchParams.set('domain', values.domain);
+    if (values.previewUrl) domainHelpUrl.searchParams.set('preview_url', values.previewUrl);
+    domainHelpLink.href = domainHelpUrl.toString();
   }
 
   if (values.feedbackUrl) {
