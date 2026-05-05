@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+---
+
+<Layout title={`Domain Setup - ${siteConfig.name}`} description="Domain and subdomain setup instructions">
+  <section class="domain-shell">
+    <p class="eyebrow">Domain setup</p>
+    <h1>Connect your domain after preview approval.</h1>
+    <p class="lede">
+      Keep using this preview site for approval and revision requests. Your public restaurant domain can point to the
+      live version after you approve the dev preview.
+    </p>
+
+    <div class="domain-grid">
+      <article>
+        <span>Option A</span>
+        <h2>Root domain</h2>
+        <p>Use your main website address, such as <strong>yourbusiness.com</strong>.</p>
+        <ul>
+          <li>We will provide the exact Cloudflare Pages DNS target.</li>
+          <li>You or your domain manager add the record at your registrar or DNS provider.</li>
+          <li>After DNS resolves, we verify HTTPS and publish the final link.</li>
+        </ul>
+      </article>
+
+      <article>
+        <span>Option B</span>
+        <h2>Subdomain</h2>
+        <p>Use a focused address, such as <strong>menu.yourbusiness.com</strong> or <strong>order.yourbusiness.com</strong>.</p>
+        <ul>
+          <li>This is useful when you already have an official website.</li>
+          <li>It is also safer for a menu-only or campaign-specific page.</li>
+          <li>The preview utility pages can remain available for revisions.</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="handoff-panel">
+      <h2>What to send us</h2>
+      <p>Send the preferred domain/subdomain, registrar name, and whether you want us to guide you or make the DNS change.</p>
+      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .domain-shell {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  .eyebrow {
+    color: #b9802f;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 760px;
+    margin-top: 0.8rem;
+    color: #17120e;
+    font-size: clamp(2.8rem, 7vw, 5.8rem);
+    font-weight: 950;
+    line-height: 0.92;
+  }
+
+  .lede {
+    max-width: 720px;
+    margin-top: 1.2rem;
+    color: #665d55;
+    font-size: 1.08rem;
+    line-height: 1.75;
+  }
+
+  .domain-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  article,
+  .handoff-panel {
+    border: 1px solid #ddd6cc;
+    background: #fffdf8;
+    padding: clamp(1rem, 3vw, 1.8rem);
+  }
+
+  article span {
+    color: #b9802f;
+    font-size: 0.75rem;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin-top: 0.6rem;
+    color: #17120e;
+    font-size: 1.35rem;
+  }
+
+  p,
+  li {
+    color: #665d55;
+    line-height: 1.65;
+  }
+
+  ul {
+    padding-left: 1.1rem;
+  }
+
+  .handoff-panel {
+    margin-top: 1rem;
+  }
+
+  .handoff-panel a {
+    color: #17120e;
+    font-weight: 950;
+  }
+
+  @media (max-width: 760px) {
+    .domain-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
