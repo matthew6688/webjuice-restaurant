@@ -24,7 +24,15 @@ export async function dispatchFunnelEvent(env: AgentDispatchEnv, input: Dispatch
     send_discord: String(input.sendDiscord ?? true),
     send_email: String(input.sendEmail ?? true),
     dry_run: String(input.dryRun ?? false),
+    dedupe_key: dedupeKey(input),
   }, input);
+}
+
+function dedupeKey(input: DispatchInput) {
+  const payload = input.payload as any;
+  const sessionId = payload?.data?.object?.id || payload?.fields?.order_id || payload?.order_id || payload?.id || '';
+  const eventId = payload?.id || '';
+  return [input.provider, eventId, sessionId].filter(Boolean).join('-').replace(/[^a-zA-Z0-9_.:-]+/g, '-').slice(0, 180);
 }
 
 export async function dispatchWorkflow(
