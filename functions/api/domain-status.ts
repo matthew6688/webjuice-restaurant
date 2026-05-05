@@ -1,9 +1,11 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { dispatchWorkflow } from './_agent-dispatch';
 
 interface Env {
   AGENT_GITHUB_TOKEN?: string;
   AGENT_REPO?: string;
   AGENT_REF?: string;
+  DOMAIN_WORKFLOW_ID?: string;
 }
 
 const DEFAULT_AGENT_REPO = 'matthew6688/webjuice-stack-mvp';
@@ -24,6 +26,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const requestPath = `data/domain/requests/${safeId(clientSlug)}/${safeId(requestId)}.json`;
     const request = await readGithubJson(github, requestPath);
     if (!request) return json({ ok: true, status: 'queued', requestId });
+    const refreshing = maybeRefreshPendingStatus(context, request);
 
     return json({
       ok: true,
@@ -36,6 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       pages: request.pages || null,
       steps: request.steps || [],
       updatedAt: request.updatedAt || '',
+      refreshing,
     });
   } catch (error) {
     console.error('Domain status error', error);
@@ -63,6 +67,34 @@ async function readGithubJson(github: { repo: string; ref: string; token: string
   const payload = await response.json() as { content?: string; encoding?: string };
   if (payload.encoding !== 'base64' || !payload.content) return null;
   return JSON.parse(atob(payload.content.replace(/\s/g, '')));
+}
+
+function maybeRefreshPendingStatus(context: any, request: any) {
+  if (request.status !== 'pages_pending') return false;
+  if (!isStale(request.updatedAt, 30_000)) return false;
+  const inputs = {
+    client_slug: String(request.clientSlug || ''),
+    order_id: String(request.orderId || ''),
+    email: String(request.email || ''),
+    domain: String(request.domain || ''),
+    project: String(request.projectName || ''),
+    execute: 'true',
+    allow_root: 'false',
+  };
+  if (!inputs.client_slug || !inputs.domain || !inputs.project) return false;
+  context.waitUntil(dispatchWorkflow(context.env, context.env.DOMAIN_WORKFLOW_ID || 'domain-request.yml', inputs, {
+    kind: 'domain_status_refresh',
+    requestId: request.id,
+    status: request.status,
+    inputs,
+  }));
+  return true;
+}
+
+function isStale(value: string, maxAgeMs: number) {
+  const timestamp = Date.parse(value || '');
+  if (!Number.isFinite(timestamp)) return true;
+  return Date.now() - timestamp > maxAgeMs;
 }
 
 function encodePath(filePath: string) {
