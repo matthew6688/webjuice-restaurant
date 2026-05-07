@@ -11,11 +11,11 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
 
 <FunnelLayout title={`Checkout - ${content.hero.name}`} description="Claim this website preview" businessName={content.hero.name}>
   <section class="checkout-shell">
-    <p class="eyebrow">Claim this site</p>
+    <p class="eyebrow">Secure checkout</p>
     <h1>{content.hero.name}</h1>
-    <p class="lede">Secure the preview, tell us your preferred domain, and send launch notes. Payment opens in Stripe Checkout.</p>
+    <p class="lede">Choose a package, tell us where the site should launch, and add the first changes you already know you want.</p>
     <p class="context-note" data-preview-context>
-      Preview source is attached to this checkout so the order maps back to the correct demo, repo, and client project.
+      This checkout is linked to the exact preview you just viewed, so payment, revisions, domain setup, and approval all map back to the right project.
     </p>
 
     <form class="checkout-form" data-checkout-form>
@@ -32,6 +32,7 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
           <option value="yearly_maintenance">$799/year website with monthly maintenance</option>
           <option value="extra_revision">$100 extra revision</option>
         </select>
+        <small>Most businesses choose the $399 package first. Choose yearly if you want ongoing monthly updates.</small>
       </label>
 
       <label>
@@ -47,11 +48,12 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
       <label>
         Preferred domain or subdomain
         <input name="preferred_domain" placeholder="yourbusiness.com or menu.yourbusiness.com" />
+        <small>Leave blank if you want us to start with a free ProfitsLocal subdomain.</small>
       </label>
 
       <label class="wide">
         Launch notes or requested changes
-        <textarea name="launch_notes" rows="5" placeholder="Menu edits, photos, logo notes, domain notes, or anything to fix before launch."></textarea>
+        <textarea name="launch_notes" rows="5" placeholder="Examples: update opening hours, replace a photo, use my own domain, adjust menu wording, change the booking link."></textarea>
       </label>
 
       <button type="submit">Continue to secure payment</button>
@@ -148,6 +150,13 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
     gap: 0.45rem;
     color: #17191c;
     font-weight: 900;
+  }
+
+  label small {
+    color: #5e6268;
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1.4;
   }
 
   .wide,

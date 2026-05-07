@@ -13,77 +13,83 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
 
 <FunnelLayout title={`How this preview works - ${content.hero.name}`} description="Preview purchase details and next steps" businessName={content.hero.name}>
   <section class="funnel-shell">
-    <p class="eyebrow">Preview offer</p>
-    <h1>Like this demo? Claim it, revise it, then launch it.</h1>
+    <p class="eyebrow">Preview ready</p>
+    <h1>Make this preview your working website.</h1>
     <p class="lede">
-      This is a working dev preview built from public business information and design research. It is not live on your domain until you approve it.
+      Keep the design direction, send the changes you need, then approve the version that should go live on your domain.
     </p>
+
+    <div class="trust-strip" aria-label="What is included">
+      <span>Secure Stripe checkout</span>
+      <span>Dev preview first</span>
+      <span>Domain guidance included</span>
+    </div>
 
     <div class="offer-grid" id="pricing">
       <article class="offer primary">
-        <span>One-time</span>
+        <span>Most owners start here</span>
         <h2>${oneTime.amount}</h2>
-        <p>Website build with 3 revision rounds. Best when you want to launch this preview and keep changes occasional.</p>
-        <a href={checkoutUrl}>Buy one-time</a>
+        <p>One-time website build with 3 revision rounds, hosting, and a free ProfitsLocal subdomain if you want the fastest launch path.</p>
+        <a href={checkoutUrl}>Claim for ${oneTime.amount}</a>
       </article>
       <article class="offer">
-        <span>Managed</span>
+        <span>Managed care</span>
         <h2>${yearly.amount}/yr</h2>
-        <p>Website build plus monthly maintenance for menu, photo, hours, and small copy updates.</p>
-        <a href={yearlyUrl}>Choose yearly</a>
+        <p>Website build plus monthly maintenance for menu, photo, hours, copy, and light SEO updates across the year.</p>
+        <a href={yearlyUrl}>Choose yearly care</a>
       </article>
     </div>
 
     <div class="process">
       <article>
         <span>01</span>
-        <h2>Pay securely</h2>
-        <p>Stripe records the order, email, selected tier, preferred domain, and launch notes.</p>
+        <h2>Claim the preview</h2>
+        <p>Choose a package and add your email, preferred domain, and launch notes.</p>
       </article>
       <article>
         <span>02</span>
-        <h2>We prepare dev</h2>
-        <p>We update the dev preview first. Your current site is not touched during review.</p>
+        <h2>We polish the dev site</h2>
+        <p>We work on the preview version first, so your current site is not touched during review.</p>
       </article>
       <article>
         <span>03</span>
-        <h2>You revise or approve</h2>
-        <p>Use your order ID and checkout email to request revisions or approve the site for launch.</p>
+        <h2>You review with control</h2>
+        <p>Your order ID and checkout email unlock revisions, approval, and status links.</p>
       </article>
       <article>
         <span>04</span>
-        <h2>Domain goes live</h2>
-        <p>Use a ProfitsLocal subdomain, your own subdomain, or your root domain with guided DNS steps.</p>
+        <h2>We guide launch</h2>
+        <p>Use a free ProfitsLocal subdomain, your own subdomain, or your root domain with DNS steps.</p>
       </article>
     </div>
 
     <section class="faq" id="questions">
       <h2>Questions owners usually ask</h2>
       <details open>
-        <summary>Will you change my phone, address, menu, or booking link?</summary>
-        <p>No. Core business facts are checked against source evidence before customer review. If something is uncertain, we ask or mark it for verification.</p>
+        <summary>Will my phone, address, menu, or booking link stay accurate?</summary>
+        <p>Yes. Core business facts are checked against source evidence before review. If something is uncertain, we ask before treating it as final.</p>
       </details>
       <details>
         <summary>Can I ask for changes before launch?</summary>
-        <p>Yes. The one-time package includes 3 revision rounds. Additional revision rounds are $100 each.</p>
+        <p>Yes. The one-time package includes 3 revision rounds. Extra rounds are available for $100 each after the included quota is used.</p>
       </details>
       <details>
         <summary>What if I already have a website?</summary>
-        <p>We preserve the important content, routes, logo/favicon intent, contact paths, SEO basics, and old URL intent where possible. The dev preview is separate until approval.</p>
+        <p>We preserve important content, logo/favicon intent, contact paths, SEO basics, and old URL intent where possible. The dev preview stays separate until approval.</p>
       </details>
       <details>
         <summary>What happens after payment?</summary>
-        <p>You land on a thank-you page with domain setup, revise, and approval links. We also send the same core information by email.</p>
+        <p>You land on a thank-you page with domain setup, revision, and approval links. We also email the same core order information.</p>
       </details>
       <details>
         <summary>Can I use my own domain?</summary>
-        <p>Yes. We support a free ProfitsLocal subdomain, a subdomain on your domain, or a root domain. Root domains may need manual DNS review.</p>
+        <p>Yes. We support a free ProfitsLocal subdomain, a subdomain on your domain, or a root domain. Root domains may need a short DNS review first.</p>
       </details>
     </section>
 
     <div class="cta-panel">
       <div>
-        <p class="eyebrow">Ready to move?</p>
+        <p class="eyebrow">Ready to claim</p>
         <h2>{content.hero.name}</h2>
         {previewUrl && <p>Current preview: <a href={previewUrl}>{previewUrl}</a></p>}
       </div>
@@ -124,6 +130,29 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
     color: #5e6268;
     font-size: 1.12rem;
     line-height: 1.75;
+  }
+
+  .trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    width: fit-content;
+    margin-top: 1.6rem;
+    border: 2px solid #17191c;
+    background: #17191c;
+    box-shadow: 5px 5px 0 #17191c;
+  }
+
+  .trust-strip span {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    background: #fffcf7;
+    padding: 0 0.82rem;
+    color: #17191c;
+    font-size: 0.78rem;
+    font-weight: 950;
+    white-space: nowrap;
   }
 
   .offer-grid,

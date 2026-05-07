@@ -10,18 +10,18 @@ const previewUrl = checkout.hiddenFields?.preview_url || '';
 
 <FunnelLayout title={`Contact ProfitsLocal - ${content.hero.name}`} description="Contact ProfitsLocal about this website preview" businessName={content.hero.name}>
   <section class="contact-shell">
-    <p class="eyebrow">Questions before checkout</p>
-    <h1>Talk to ProfitsLocal about this preview.</h1>
+    <p class="eyebrow">Need a human answer?</p>
+    <h1>Ask before you claim this preview.</h1>
     <p class="lede">
-      Ask about pricing, domain setup, timeline, revisions, or what happens after payment. We keep the preview context attached so we know exactly which demo you mean.
+      Send questions about pricing, domains, timeline, content changes, or launch. The preview context stays attached so we know exactly which site you mean.
     </p>
 
     <div class="contact-grid">
       <section class="contact-panel">
-        <h2>Direct contact</h2>
+        <h2>Direct line</h2>
         <a class="contact-line" href={`mailto:${supportEmail}`}>{supportEmail}</a>
         <a class="contact-line" href={`mailto:${supportEmail}?subject=${encodeURIComponent(`Call request for ${content.hero.name}`)}`}>Request a callback by email</a>
-        <p>Include your phone number and best time to call. We will reply with next steps for this exact preview.</p>
+        <p>For a phone call, include your number and a good time. We will reply with next steps for this exact preview.</p>
       </section>
 
       <form class="contact-form" data-contact-form>
@@ -43,14 +43,14 @@ const previewUrl = checkout.hiddenFields?.preview_url || '';
         </label>
         <label>
           Question
-          <textarea name="message" rows="5" required placeholder="Tell us what you want to know before claiming this preview."></textarea>
+          <textarea name="message" rows="5" required placeholder="Ask about domain setup, launch timing, revisions, photos, menu/content changes, or anything blocking a decision."></textarea>
         </label>
-        <button type="submit">Email ProfitsLocal</button>
+        <button type="submit">Prepare email</button>
       </form>
     </div>
 
     <aside class="context-card" data-preview-context>
-      <span>Attached preview context</span>
+      <span>Project attached</span>
       <p>Client: {checkout.hiddenFields?.client_slug || checkout.clientSlug || content.hero.name}</p>
       {previewUrl && <p>Preview: <a href={previewUrl}>{previewUrl}</a></p>}
       {checkout.hiddenFields?.repo && <p>Repo: {checkout.hiddenFields.repo}</p>}
