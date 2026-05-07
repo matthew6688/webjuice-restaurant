@@ -3,8 +3,8 @@ import { loadCheckoutArtifact } from '../lib/restaurantArtifacts';
 
 const checkout = loadCheckoutArtifact();
 const tiers = checkout.tiers || [];
-const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || tiers[0];
-const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || tiers[1];
+const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || tiers[0] || { id: 'one_time', amount: 399, purchaseUrl: 'official' };
+const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || tiers[1] || { id: 'yearly_maintenance', amount: 799, purchaseUrl: 'official' };
 const hasSalesBar = Boolean(oneTime?.purchaseUrl || yearly?.purchaseUrl || checkout.feedbackUrl);
 const hidden = checkout.hiddenFields || {};
 const clientSlug = hidden.client_slug || checkout.clientSlug || '';
@@ -64,16 +64,16 @@ function buildOfficialUrl(tier: any, fallbackTier: string) {
         <a class="preview-sales-link" href={faqAnchorUrl} data-sales-mode>FAQ</a>
         <a class="preview-sales-link" href={contactUrl} data-sales-mode>Contact</a>
         <a class="preview-sales-checkout" href={oneTimeUrl || yearlyUrl || faqUrl} target="_blank" data-sales-mode>Checkout</a>
-        <a class="preview-sales-plan preview-sales-plan-featured is-hidden" href="/approve" data-order-mode data-approve-link>
+        <a class="preview-sales-plan preview-sales-plan-featured is-hidden" href={`${funnelOrigin}/approve`} data-order-mode data-approve-link>
           <span>Approve site</span>
           <small>publish live</small>
         </a>
-        <a class="preview-sales-plan is-hidden" href="/revise" data-order-mode data-revise-link>
+        <a class="preview-sales-plan is-hidden" href={`${funnelOrigin}/revision`} data-order-mode data-revise-link>
           <span>Request revision</span>
           <small data-revision-usage>check quota</small>
         </a>
-        <a class="preview-sales-link is-hidden" href="/domain-setup" data-order-mode data-domain-link>Domain setup</a>
-        <a class="preview-sales-link is-hidden" href="/checkout?tier=extra_revision" data-order-mode data-extra-link>Buy extra revision</a>
+        <a class="preview-sales-link is-hidden" href={`${funnelOrigin}/domain-setup`} data-order-mode data-domain-link>Domain setup</a>
+        <a class="preview-sales-link is-hidden" href={`${funnelOrigin}/checkout?tier=extra_revision`} data-order-mode data-extra-link>Buy extra revision</a>
       </nav>
     </div>
   </aside>
@@ -115,18 +115,6 @@ function buildOfficialUrl(tier: any, fallbackTier: string) {
         extraParams.set('tier', 'extra_revision');
         extra.setAttribute('href', `${funnelOrigin}/checkout?${extraParams.toString()}`);
       }
-      fetch('/api/order-status/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, email, client_slug: clientSlug, repo }),
-      })
-        .then((response) => (response.ok ? response.json() : null))
-        .then((data) => {
-          const usage = bar.querySelector('[data-revision-usage]');
-          if (!usage || !data?.revision) return;
-          usage.textContent = `${data.revision.used}/${data.revision.limit} used`;
-        })
-        .catch(() => {});
     }
   }
 </script>
