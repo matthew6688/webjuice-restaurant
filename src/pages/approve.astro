@@ -1,12 +1,12 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
 import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
 
 const content = loadRestaurantContent();
 const checkout = loadCheckoutArtifact();
 ---
 
-<Layout title={`Approve Preview - ${content.hero.name}`} description="Approve the dev preview for live publishing">
+<FunnelLayout title={`Approve Preview - ${content.hero.name}`} description="Approve the dev preview for live publishing" businessName={content.hero.name}>
   <section class="approve-shell">
     <p class="eyebrow">Launch approval</p>
     <h1>Approve the dev preview.</h1>
@@ -35,7 +35,7 @@ const checkout = loadCheckoutArtifact();
       <p class="status" data-status></p>
     </form>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);

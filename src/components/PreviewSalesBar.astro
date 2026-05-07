@@ -10,6 +10,12 @@ const hidden = checkout.hiddenFields || {};
 const clientSlug = hidden.client_slug || checkout.clientSlug || '';
 const repo = hidden.repo || '';
 const previewUrl = hidden.preview_url || '';
+const infoParams = new URLSearchParams({
+  client_slug: clientSlug,
+  repo,
+  preview_url: previewUrl,
+});
+const faqUrl = `/demo-faq?${infoParams.toString()}`;
 ---
 
 {hasSalesBar && (
@@ -24,9 +30,10 @@ const previewUrl = hidden.preview_url || '';
     <div class="preview-sales-inner">
       <div class="preview-sales-copy">
         <strong data-sales-title>Preview ready</strong>
-        <span data-sales-subtitle>Claim, revise, or maintain this site</span>
+        <span data-sales-subtitle>Review the offer, then claim this site</span>
       </div>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
+        <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
         {oneTime?.purchaseUrl && (
           <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
             <span>Claim ${oneTime.amount}</span>
@@ -47,6 +54,7 @@ const previewUrl = hidden.preview_url || '';
           <span>Request revision</span>
           <small data-revision-usage>check quota</small>
         </a>
+        <a class="preview-sales-link is-hidden" href="/domain-setup" data-order-mode data-domain-link>Domain setup</a>
         <a class="preview-sales-link is-hidden" href="/checkout?tier=extra_revision" data-order-mode data-extra-link>Buy extra revision</a>
         {checkout.feedbackUrl && (
           <a class="preview-sales-link" href={checkout.feedbackUrl} target="_blank" data-sales-mode>Request changes</a>
@@ -80,10 +88,12 @@ const previewUrl = hidden.preview_url || '';
       const approve = bar.querySelector('[data-approve-link]');
       const revise = bar.querySelector('[data-revise-link]');
       const extra = bar.querySelector('[data-extra-link]');
+      const domain = bar.querySelector('[data-domain-link]');
       if (title) title.textContent = 'Review controls';
       if (subtitle) subtitle.textContent = 'Approve or request changes from this dev preview';
       if (approve) approve.setAttribute('href', `/approve?${shared.toString()}`);
       if (revise) revise.setAttribute('href', `/revise?${shared.toString()}`);
+      if (domain) domain.setAttribute('href', `/domain-setup?${shared.toString()}`);
       if (extra) {
         const extraParams = new URLSearchParams(shared);
         extraParams.set('tier', 'extra_revision');

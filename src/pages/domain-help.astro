@@ -1,9 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { siteConfig } from '../config/site';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
+
+const supportEmail = 'hello@fengtalk.ai';
 ---
 
-<Layout title={`Domain Setup - ${siteConfig.name}`} description="Domain and subdomain setup instructions">
+<FunnelLayout title="Domain Setup - ProfitsLocal" description="Domain and subdomain setup instructions">
   <section class="domain-shell">
     <p class="eyebrow">Domain setup</p>
     <h1>Choose the launch address before we publish live.</h1>
@@ -95,7 +96,7 @@ import { siteConfig } from '../config/site';
         <li>We wait for Cloudflare Pages domain status and HTTPS certificate to become active.</li>
         <li>We send the final live link. The preview utility pages remain available for revisions.</li>
       </ol>
-      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+      <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
     </div>
 
     <div class="steps-panel">
@@ -105,7 +106,7 @@ import { siteConfig } from '../config/site';
       <p><strong>Best for a full replacement:</strong> use the root domain after checking existing DNS, email, and website records.</p>
     </div>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);

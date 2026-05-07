@@ -1,9 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { siteConfig } from '../config/site';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
+
+const supportEmail = 'hello@fengtalk.ai';
 ---
 
-<Layout title={`Thank You - ${siteConfig.name}`} description="Order confirmation">
+<FunnelLayout title="Thank You - ProfitsLocal" description="Order confirmation">
   <section class="thank-you-shell">
     <p class="eyebrow">Payment received</p>
     <h1>Thanks. Your website request is in the queue.</h1>
@@ -65,10 +66,10 @@ import { siteConfig } from '../config/site';
         <span data-email-line>We will contact you using the email submitted in the payment form. </span>
         You can also email us directly with assets, domain notes, or urgent changes.
       </p>
-      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+      <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
     </div>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);

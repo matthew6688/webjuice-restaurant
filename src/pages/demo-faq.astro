@@ -1,0 +1,240 @@
+---
+import FunnelLayout from '../layouts/FunnelLayout.astro';
+import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
+
+const content = loadRestaurantContent();
+const checkout = loadCheckoutArtifact();
+const oneTime = (checkout.tiers || []).find((tier: any) => tier.id === 'one_time') || { amount: 399 };
+const yearly = (checkout.tiers || []).find((tier: any) => tier.id === 'yearly_maintenance') || { amount: 799 };
+const previewUrl = checkout.hiddenFields?.preview_url || '';
+const checkoutUrl = oneTime.purchaseUrl || '/checkout?tier=one_time';
+const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
+---
+
+<FunnelLayout title={`How this preview works - ${content.hero.name}`} description="Preview purchase details and next steps" businessName={content.hero.name}>
+  <section class="funnel-shell">
+    <p class="eyebrow">Preview offer</p>
+    <h1>Like this demo? Claim it, revise it, then launch it.</h1>
+    <p class="lede">
+      This is a working dev preview built from public business information and design research. It is not live on your domain until you approve it.
+    </p>
+
+    <div class="offer-grid">
+      <article class="offer primary">
+        <span>One-time</span>
+        <h2>${oneTime.amount}</h2>
+        <p>Website build with 3 revision rounds. Best when you want to launch this preview and keep changes occasional.</p>
+        <a href={checkoutUrl}>Buy one-time</a>
+      </article>
+      <article class="offer">
+        <span>Managed</span>
+        <h2>${yearly.amount}/yr</h2>
+        <p>Website build plus monthly maintenance for menu, photo, hours, and small copy updates.</p>
+        <a href={yearlyUrl}>Choose yearly</a>
+      </article>
+    </div>
+
+    <div class="process">
+      <article>
+        <span>01</span>
+        <h2>Pay securely</h2>
+        <p>Stripe records the order, email, selected tier, preferred domain, and launch notes.</p>
+      </article>
+      <article>
+        <span>02</span>
+        <h2>We prepare dev</h2>
+        <p>We update the dev preview first. Your current site is not touched during review.</p>
+      </article>
+      <article>
+        <span>03</span>
+        <h2>You revise or approve</h2>
+        <p>Use your order ID and checkout email to request revisions or approve the site for launch.</p>
+      </article>
+      <article>
+        <span>04</span>
+        <h2>Domain goes live</h2>
+        <p>Use a ProfitsLocal subdomain, your own subdomain, or your root domain with guided DNS steps.</p>
+      </article>
+    </div>
+
+    <section class="faq">
+      <h2>Questions owners usually ask</h2>
+      <details open>
+        <summary>Will you change my phone, address, menu, or booking link?</summary>
+        <p>No. Core business facts are checked against source evidence before customer review. If something is uncertain, we ask or mark it for verification.</p>
+      </details>
+      <details>
+        <summary>Can I ask for changes before launch?</summary>
+        <p>Yes. The one-time package includes 3 revision rounds. Additional revision rounds are $100 each.</p>
+      </details>
+      <details>
+        <summary>What if I already have a website?</summary>
+        <p>We preserve the important content, routes, logo/favicon intent, contact paths, SEO basics, and old URL intent where possible. The dev preview is separate until approval.</p>
+      </details>
+      <details>
+        <summary>What happens after payment?</summary>
+        <p>You land on a thank-you page with domain setup, revise, and approval links. We also send the same core information by email.</p>
+      </details>
+      <details>
+        <summary>Can I use my own domain?</summary>
+        <p>Yes. We support a free ProfitsLocal subdomain, a subdomain on your domain, or a root domain. Root domains may need manual DNS review.</p>
+      </details>
+    </section>
+
+    <div class="cta-panel">
+      <div>
+        <p class="eyebrow">Ready to move?</p>
+        <h2>{content.hero.name}</h2>
+        {previewUrl && <p>Current preview: <a href={previewUrl}>{previewUrl}</a></p>}
+      </div>
+      <a href={checkoutUrl}>Claim this preview</a>
+    </div>
+  </section>
+</FunnelLayout>
+
+<style>
+  .funnel-shell {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  .eyebrow,
+  .process article > span,
+  .offer > span {
+    color: #b9802f;
+    font-size: 0.74rem;
+    font-weight: 950;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 900px;
+    margin-top: 0.8rem;
+    color: #17120e;
+    font-size: clamp(3rem, 8vw, 6.7rem);
+    font-weight: 950;
+    line-height: 0.9;
+  }
+
+  .lede {
+    max-width: 700px;
+    margin-top: 1.3rem;
+    color: #665d55;
+    font-size: 1.12rem;
+    line-height: 1.75;
+  }
+
+  .offer-grid,
+  .process {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 3rem;
+    border: 1px solid #ddd6cc;
+    background: #ddd6cc;
+  }
+
+  .offer,
+  .process article,
+  .faq,
+  .cta-panel {
+    background: #fffdf8;
+  }
+
+  .offer,
+  .process article {
+    padding: clamp(1.2rem, 3vw, 2rem);
+  }
+
+  .offer.primary {
+    background: #17120e;
+    color: #fffdf8;
+  }
+
+  .offer h2 {
+    margin: 0.7rem 0;
+    font-size: clamp(3rem, 7vw, 5.6rem);
+    font-weight: 950;
+    line-height: 0.9;
+  }
+
+  .offer p,
+  .process p,
+  .faq p,
+  .cta-panel p {
+    color: #665d55;
+    line-height: 1.65;
+  }
+
+  .offer.primary p {
+    color: #d8d0c5;
+  }
+
+  .offer a,
+  .cta-panel > a {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.2rem;
+    padding: 0.85rem 1.1rem;
+    background: #b9802f;
+    color: white;
+    font-weight: 950;
+    text-decoration: none;
+  }
+
+  .process h2,
+  .faq h2,
+  .cta-panel h2 {
+    margin-top: 0.75rem;
+    color: #17120e;
+    font-size: 1.35rem;
+    font-weight: 950;
+  }
+
+  .faq {
+    margin-top: 3rem;
+    border: 1px solid #ddd6cc;
+    padding: clamp(1.2rem, 3vw, 2rem);
+  }
+
+  details {
+    border-top: 1px solid #ddd6cc;
+    padding: 1rem 0;
+  }
+
+  summary {
+    cursor: pointer;
+    color: #17120e;
+    font-weight: 950;
+  }
+
+  .cta-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.2rem;
+    border: 1px solid #ddd6cc;
+    padding: clamp(1.2rem, 3vw, 2rem);
+  }
+
+  .cta-panel a {
+    overflow-wrap: anywhere;
+    color: inherit;
+  }
+
+  @media (max-width: 720px) {
+    .offer-grid,
+    .process {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-panel {
+      display: grid;
+    }
+  }
+</style>

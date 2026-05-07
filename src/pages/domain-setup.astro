@@ -1,9 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { siteConfig } from '../config/site';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
 ---
 
-<Layout title={`Domain Launch - ${siteConfig.name}`} description="Choose and track your launch domain">
+<FunnelLayout title="Domain Launch - ProfitsLocal" description="Choose and track your launch domain">
   <section class="domain-shell">
     <p class="eyebrow">Domain launch</p>
     <h1>Set the public address for your approved site.</h1>
@@ -59,7 +58,7 @@ import { siteConfig } from '../config/site';
       <ol data-steps></ol>
     </div>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);

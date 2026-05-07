@@ -1,12 +1,12 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
 import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
 
 const content = loadRestaurantContent();
 const checkout = loadCheckoutArtifact();
 ---
 
-<Layout title={`Request Revisions - ${content.hero.name}`} description="Submit website revision request">
+<FunnelLayout title={`Request Revisions - ${content.hero.name}`} description="Submit website revision request" businessName={content.hero.name}>
   <section class="revise-shell">
     <p class="eyebrow">Revision request</p>
     <h1>{content.hero.name}</h1>
@@ -74,7 +74,7 @@ const checkout = loadCheckoutArtifact();
       <p class="status" data-status></p>
     </form>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);

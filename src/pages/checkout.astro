@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import FunnelLayout from '../layouts/FunnelLayout.astro';
 import { loadCheckoutArtifact, loadRestaurantContent } from '../lib/restaurantArtifacts';
 
 const content = loadRestaurantContent();
@@ -9,7 +9,7 @@ const oneTime = tiers.find((tier: any) => tier.id === 'one_time') || { id: 'one_
 const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { id: 'yearly_maintenance', amount: 799 };
 ---
 
-<Layout title={`Checkout - ${content.hero.name}`} description="Claim this website preview">
+<FunnelLayout title={`Checkout - ${content.hero.name}`} description="Claim this website preview" businessName={content.hero.name}>
   <section class="checkout-shell">
     <p class="eyebrow">Claim this site</p>
     <h1>{content.hero.name}</h1>
@@ -55,7 +55,7 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
       <p class="status" data-status></p>
     </form>
   </section>
-</Layout>
+</FunnelLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);
