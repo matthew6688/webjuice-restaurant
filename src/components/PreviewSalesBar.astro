@@ -29,31 +29,33 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
   >
     <div class="preview-sales-inner">
       <div class="preview-sales-copy">
-        <span class="preview-sales-brand">ProfitsLocal</span>
-        <div>
-          <strong data-sales-title>Website preview ready</strong>
-          <span data-sales-subtitle>Review the offer, then claim this site</span>
-        </div>
+        <span class="preview-sales-mark" aria-hidden="true"></span>
+        <span class="preview-sales-brand">profitslocal</span>
       </div>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
-        <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
         {oneTime?.purchaseUrl && (
-          <a class="preview-sales-button preview-sales-primary" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
-            <span>Claim ${oneTime.amount}</span>
-            <small>3 revisions</small>
+          <a class="preview-sales-plan preview-sales-plan-featured" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
+            <span>${oneTime.amount} one-time</span>
+            <small>3 revisions + hosting + subdomain</small>
           </a>
         )}
         {yearly?.purchaseUrl && (
-          <a class="preview-sales-button" href={yearly.purchaseUrl} target="_blank" data-sales-mode>
-            <span>${yearly.amount}/yr</span>
-            <small>monthly care</small>
+          <a class="preview-sales-plan" href={yearly.purchaseUrl} target="_blank" data-sales-mode>
+            <span>${yearly.amount}/year</span>
+            <small>12 revisions + maintenance + SEO</small>
           </a>
         )}
-        <a class="preview-sales-button preview-sales-primary is-hidden" href="/approve" data-order-mode data-approve-link>
+        <a class="preview-sales-plan" href="/checkout?tier=extra_revision" data-sales-mode>
+          <span>$100 extra revision</span>
+          <small>Only after quota is used</small>
+        </a>
+        <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
+        <a class="preview-sales-checkout" href={oneTime?.purchaseUrl || yearly?.purchaseUrl || faqUrl} target="_blank" data-sales-mode>Checkout</a>
+        <a class="preview-sales-plan preview-sales-plan-featured is-hidden" href="/approve" data-order-mode data-approve-link>
           <span>Approve site</span>
           <small>publish live</small>
         </a>
-        <a class="preview-sales-button is-hidden" href="/revise" data-order-mode data-revise-link>
+        <a class="preview-sales-plan is-hidden" href="/revise" data-order-mode data-revise-link>
           <span>Request revision</span>
           <small data-revision-usage>check quota</small>
         </a>
@@ -120,7 +122,7 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
 
 <style>
   :global(body:has(.preview-sales-bar)) {
-    padding-bottom: 88px;
+    padding-bottom: 96px;
   }
 
   .preview-sales-bar {
@@ -129,30 +131,26 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
     right: 0;
     bottom: 0;
     left: 0;
-    padding: 0.85rem;
+    padding: 0 1.4rem 1.05rem;
     background: transparent;
     color: #17191c;
     pointer-events: none;
   }
 
   .preview-sales-inner {
-    display: flex;
-    max-width: 1040px;
-    min-height: 64px;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 244px minmax(230px, 1.2fr) minmax(230px, 1.2fr) minmax(210px, 1fr) auto auto;
+    max-width: 1220px;
+    min-height: 70px;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 0;
     margin: 0 auto;
-    border: 1px solid rgba(23, 25, 28, 0.12);
-    border-radius: 26px;
-    padding: 0.62rem;
-    background:
-      linear-gradient(135deg, rgba(255, 246, 236, 0.96), rgba(255, 252, 247, 0.94)),
-      #fff6ec;
-    backdrop-filter: blur(20px);
-    box-shadow:
-      0 20px 70px rgba(23, 25, 28, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    border: 2px solid #17191c;
+    border-radius: 0;
+    padding: 0;
+    background: #fffcf7;
+    box-shadow: 8px 8px 0 #17191c;
     pointer-events: auto;
   }
 
@@ -160,57 +158,57 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
     display: flex;
     min-width: 0;
     align-items: center;
-    gap: 0.85rem;
-    padding-left: 0.55rem;
+    gap: 0.58rem;
+    min-height: 68px;
+    border-right: 2px solid #17191c;
+    padding: 0 1.45rem;
+  }
+
+  .preview-sales-mark {
+    position: relative;
+    display: inline-flex;
+    width: 32px;
+    height: 38px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    background: #ff5a3d;
+    clip-path: path("M16 0C7.2 0 0 7.1 0 15.9c0 11.9 16 22.1 16 22.1s16-10.2 16-22.1C32 7.1 24.8 0 16 0Z");
+  }
+
+  .preview-sales-mark::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border: 4px solid #fffcf7;
+    border-radius: 999px;
   }
 
   .preview-sales-brand {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 42px;
-    border-right: 1px solid rgba(23, 25, 28, 0.14);
-    padding-right: 0.9rem;
     color: #17191c;
-    font-family: Playfair Display, Georgia, serif;
-    font-size: 1.08rem;
-    font-weight: 800;
+    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 950;
     line-height: 1;
     letter-spacing: 0;
   }
 
-  .preview-sales-copy strong {
-    display: block;
-    color: #17191c;
-    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.88rem;
-    font-weight: 850;
-    line-height: 1.1;
-  }
-
-  .preview-sales-copy span {
-    color: #5e6268;
-    display: block;
-    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.72rem;
-    font-weight: 720;
-    line-height: 1.25;
-  }
-
   .preview-sales-actions {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 0.45rem;
+    display: contents;
   }
 
-  .preview-sales-button,
-  .preview-sales-link {
+  .preview-sales-plan,
+  .preview-sales-link,
+  .preview-sales-checkout {
     display: inline-flex;
-    min-height: 44px;
+    min-height: 68px;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-right: 2px solid #17191c;
+    border-radius: 0;
     font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
     text-decoration: none;
     white-space: nowrap;
@@ -220,104 +218,100 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
     display: none !important;
   }
 
-  .preview-sales-button {
-    gap: 0.32rem;
-    border: 1px solid rgba(23, 25, 28, 0.14);
-    padding: 0.48rem 0.9rem;
-    background: #17191c;
-    color: #fffcf7;
-    box-shadow: 0 10px 24px rgba(23, 25, 28, 0.14);
-  }
-
-  .preview-sales-primary {
-    background: #ff5a3d;
-    border-color: #ff5a3d;
+  .preview-sales-plan {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.78rem 0.95rem;
     color: #17191c;
-    box-shadow: 0 12px 30px rgba(255, 90, 61, 0.28);
   }
 
-  .preview-sales-button span {
-    font-size: 0.86rem;
-    font-weight: 900;
+  .preview-sales-plan-featured {
+    background: #cdeccf;
+  }
+
+  .preview-sales-plan span {
+    font-size: 0.96rem;
+    font-weight: 950;
     line-height: 1;
   }
 
-  .preview-sales-button small {
-    font-size: 0.66rem;
-    font-weight: 800;
-    line-height: 1;
-    opacity: 0.86;
+  .preview-sales-plan small {
+    margin-top: 0.34rem;
+    color: #5e6268;
+    font-size: 0.76rem;
+    font-weight: 850;
+    line-height: 1.1;
   }
 
   .preview-sales-link {
-    min-height: 42px;
-    border: 1px solid transparent;
-    padding: 0.42rem 0.7rem;
+    padding: 0 1.05rem;
     color: #17191c;
-    font-size: 0.76rem;
-    font-weight: 850;
+    font-size: 0.78rem;
+    font-weight: 950;
     text-decoration: none;
   }
 
   .preview-sales-link:hover {
-    border-color: rgba(23, 25, 28, 0.13);
-    background: rgba(255, 252, 247, 0.82);
+    background: #fff6ec;
+  }
+
+  .preview-sales-checkout {
+    min-width: 126px;
+    margin: 0.74rem 0.74rem 0.74rem 0.74rem;
+    border: 0;
+    background: #ff5a3d;
+    color: #fffcf7;
+    font-size: 0.9rem;
+    font-weight: 950;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    box-shadow: 6px 6px 0 #17191c;
   }
 
   @media (max-width: 680px) {
     :global(body:has(.preview-sales-bar)) {
-      padding-bottom: 96px;
+      padding-bottom: 94px;
     }
 
     .preview-sales-bar {
-      padding: 0.62rem;
+      padding: 0 0.65rem 0.75rem;
     }
 
     .preview-sales-inner {
-      min-height: 58px;
-      align-items: center;
-      gap: 0.55rem;
-      border-radius: 22px;
-      overflow: hidden;
+      display: flex;
+      max-width: 100%;
+      min-height: 66px;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+    }
+
+    .preview-sales-copy,
+    .preview-sales-plan,
+    .preview-sales-link,
+    .preview-sales-checkout {
+      flex: 0 0 auto;
+      min-height: 66px;
+      scroll-snap-align: start;
     }
 
     .preview-sales-copy {
-      display: none;
+      min-width: 180px;
+      padding-inline: 1rem;
     }
 
-    .preview-sales-actions {
-      overflow-x: auto;
-      width: auto;
-      max-width: 100vw;
-      padding-bottom: 0.1rem;
-    }
-
-    .preview-sales-button {
-      flex: 0 0 auto;
-      min-height: 42px;
-      padding-inline: 0.76rem;
-    }
-
-    .preview-sales-button small {
-      display: none;
-    }
-
-    .preview-sales-button[data-order-mode] {
-      gap: 0.28rem;
-    }
-
-    .preview-sales-button[data-order-mode] small {
-      display: inline;
-      max-width: 4.8rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .preview-sales-plan {
+      min-width: 230px;
     }
 
     .preview-sales-link {
-      flex: 0 0 auto;
-      min-height: 40px;
-      padding-inline: 0.75rem;
+      min-width: 116px;
+      padding-inline: 0.9rem;
+    }
+
+    .preview-sales-checkout {
+      min-width: 118px;
+      margin: 0.62rem;
+      min-height: 42px;
     }
   }
 </style>
