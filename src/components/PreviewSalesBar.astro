@@ -17,6 +17,7 @@ const infoParams = new URLSearchParams({
 });
 const faqUrl = `/demo-faq?${infoParams.toString()}`;
 const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
+const contactUrl = `/contact-us?${infoParams.toString()}`;
 ---
 
 {hasSalesBar && (
@@ -29,10 +30,9 @@ const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
     data-preview-url={previewUrl}
   >
     <div class="preview-sales-inner">
-      <div class="preview-sales-copy">
-        <span class="preview-sales-mark" aria-hidden="true"></span>
-        <span class="preview-sales-brand">profitslocal</span>
-      </div>
+      <a class="preview-sales-copy" href="https://profitslocal.com/" target="_blank" rel="noreferrer" aria-label="Open ProfitsLocal website">
+        <img class="preview-sales-logo" src="https://profitslocal.com/brand/logo-horizontal.svg" alt="profitslocal" />
+      </a>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
         {oneTime?.purchaseUrl && (
           <a class="preview-sales-plan preview-sales-plan-featured" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
@@ -48,6 +48,7 @@ const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
         )}
         <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
         <a class="preview-sales-link" href={faqAnchorUrl} data-sales-mode>FAQ</a>
+        <a class="preview-sales-link" href={contactUrl} data-sales-mode>Contact</a>
         <a class="preview-sales-checkout" href={oneTime?.purchaseUrl || yearly?.purchaseUrl || faqUrl} target="_blank" data-sales-mode>Checkout</a>
         <a class="preview-sales-plan preview-sales-plan-featured is-hidden" href="/approve" data-order-mode data-approve-link>
           <span>Approve site</span>
@@ -134,8 +135,8 @@ const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
 
   .preview-sales-inner {
     display: grid;
-    grid-template-columns: 244px minmax(250px, 1.15fr) minmax(250px, 1.15fr) 120px 82px 142px;
-    width: min(1320px, calc(100vw - 2.8rem));
+    grid-template-columns: 244px minmax(246px, 1.1fr) minmax(246px, 1.1fr) 120px 82px 94px 142px;
+    width: min(1480px, calc(100vw - 2.8rem));
     max-width: none;
     min-height: 70px;
     align-items: stretch;
@@ -158,38 +159,16 @@ const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
     min-height: 68px;
     border-right: 2px solid #17191c;
     padding: 0 1.45rem;
+    color: inherit;
+    text-decoration: none;
   }
 
-  .preview-sales-mark {
-    position: relative;
-    display: inline-flex;
-    width: 32px;
-    height: 38px;
+  .preview-sales-logo {
+    display: block;
+    width: 143px;
+    max-width: 100%;
+    height: auto;
     flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    background: #ff5a3d;
-    clip-path: path("M16 0C7.2 0 0 7.1 0 15.9c0 11.9 16 22.1 16 22.1s16-10.2 16-22.1C32 7.1 24.8 0 16 0Z");
-  }
-
-  .preview-sales-mark::before {
-    content: "";
-    width: 12px;
-    height: 12px;
-    border: 4px solid #fffcf7;
-    border-radius: 999px;
-  }
-
-  .preview-sales-brand {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #17191c;
-    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
-    font-size: 1rem;
-    font-weight: 950;
-    line-height: 1;
-    letter-spacing: 0;
   }
 
   .preview-sales-actions {

@@ -14,6 +14,9 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
     <p class="eyebrow">Claim this site</p>
     <h1>{content.hero.name}</h1>
     <p class="lede">Secure the preview, tell us your preferred domain, and send launch notes. Payment opens in Stripe Checkout.</p>
+    <p class="context-note" data-preview-context>
+      Preview source is attached to this checkout so the order maps back to the correct demo, repo, and client project.
+    </p>
 
     <form class="checkout-form" data-checkout-form>
       <input type="hidden" name="client_slug" value={checkout.hiddenFields?.client_slug || checkout.clientSlug || ''} />
@@ -65,6 +68,10 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
   const orderId = params.get('order_id') || params.get('session_id') || '';
   if (tier && form?.elements?.tier) form.elements.tier.value = tier;
   if (orderId && form?.elements?.order_id) form.elements.order_id.value = orderId;
+  ['client_slug', 'repo', 'template', 'preview_url'].forEach((key) => {
+    const value = params.get(key);
+    if (value && form?.elements?.[key]) form.elements[key].value = value;
+  });
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -93,7 +100,7 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
   }
 
   .eyebrow {
-    color: #b9802f;
+    color: #ff5a3d;
     font-size: 0.75rem;
     font-weight: 900;
     letter-spacing: 0.18em;
@@ -102,18 +109,27 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
 
   h1 {
     margin-top: 0.8rem;
-    color: #17120e;
+    color: #17191c;
     font-size: clamp(3rem, 8vw, 6.2rem);
     font-weight: 950;
     line-height: 0.9;
   }
 
-  .lede {
+  .lede,
+  .context-note {
     max-width: 660px;
     margin-top: 1.2rem;
-    color: #665d55;
+    color: #5e6268;
     font-size: 1.08rem;
     line-height: 1.75;
+  }
+
+  .context-note {
+    border-left: 5px solid #ff5a3d;
+    background: #fffcf7;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 850;
   }
 
   .checkout-form {
@@ -121,15 +137,16 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
     margin-top: 2.5rem;
-    border: 1px solid #ddd6cc;
+    border: 2px solid #17191c;
     padding: clamp(1rem, 3vw, 2rem);
-    background: white;
+    background: #fffcf7;
+    box-shadow: 6px 6px 0 #17191c;
   }
 
   label {
     display: grid;
     gap: 0.45rem;
-    color: #17120e;
+    color: #17191c;
     font-weight: 900;
   }
 
@@ -143,27 +160,28 @@ const yearly = tiers.find((tier: any) => tier.id === 'yearly_maintenance') || { 
   select,
   textarea {
     width: 100%;
-    border: 1px solid #ddd6cc;
-    border-radius: 4px;
+    border: 2px solid rgba(23, 25, 28, 0.26);
+    border-radius: 0;
     padding: 0.82rem 0.9rem;
-    color: #17120e;
+    color: #17191c;
     font: inherit;
     font-weight: 600;
   }
 
   button {
     min-height: 52px;
-    border: 0;
-    border-radius: 4px;
-    background: #b9802f;
-    color: white;
+    border: 2px solid #17191c;
+    border-radius: 0;
+    background: #ff5a3d;
+    color: #fffcf7;
+    box-shadow: 5px 5px 0 #17191c;
     font-weight: 950;
     cursor: pointer;
   }
 
   .status {
     margin: 0;
-    color: #665d55;
+    color: #5e6268;
     font-weight: 800;
   }
 

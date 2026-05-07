@@ -19,7 +19,7 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
       This is a working dev preview built from public business information and design research. It is not live on your domain until you approve it.
     </p>
 
-    <div class="offer-grid">
+    <div class="offer-grid" id="pricing">
       <article class="offer primary">
         <span>One-time</span>
         <h2>${oneTime.amount}</h2>
@@ -102,7 +102,7 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   .eyebrow,
   .process article > span,
   .offer > span {
-    color: #b9802f;
+    color: #ff5a3d;
     font-size: 0.74rem;
     font-weight: 950;
     letter-spacing: 0.18em;
@@ -112,7 +112,7 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   h1 {
     max-width: 900px;
     margin-top: 0.8rem;
-    color: #17120e;
+    color: #17191c;
     font-size: clamp(3rem, 8vw, 6.7rem);
     font-weight: 950;
     line-height: 0.9;
@@ -121,7 +121,7 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   .lede {
     max-width: 700px;
     margin-top: 1.3rem;
-    color: #665d55;
+    color: #5e6268;
     font-size: 1.12rem;
     line-height: 1.75;
   }
@@ -132,15 +132,16 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1px;
     margin-top: 3rem;
-    border: 1px solid #ddd6cc;
-    background: #ddd6cc;
+    border: 2px solid #17191c;
+    background: #17191c;
+    box-shadow: 6px 6px 0 #17191c;
   }
 
   .offer,
   .process article,
   .faq,
   .cta-panel {
-    background: #fffdf8;
+    background: #fffcf7;
   }
 
   .offer,
@@ -149,8 +150,8 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   }
 
   .offer.primary {
-    background: #17120e;
-    color: #fffdf8;
+    background: #cdeccf;
+    color: #17191c;
   }
 
   .offer h2 {
@@ -164,12 +165,12 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   .process p,
   .faq p,
   .cta-panel p {
-    color: #665d55;
+    color: #5e6268;
     line-height: 1.65;
   }
 
   .offer.primary p {
-    color: #d8d0c5;
+    color: #3e444b;
   }
 
   .offer a,
@@ -180,8 +181,10 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
     justify-content: center;
     margin-top: 1.2rem;
     padding: 0.85rem 1.1rem;
-    background: #b9802f;
-    color: white;
+    border: 2px solid #17191c;
+    background: #ff5a3d;
+    color: #fffcf7;
+    box-shadow: 5px 5px 0 #17191c;
     font-weight: 950;
     text-decoration: none;
   }
@@ -190,25 +193,26 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
   .faq h2,
   .cta-panel h2 {
     margin-top: 0.75rem;
-    color: #17120e;
+    color: #17191c;
     font-size: 1.35rem;
     font-weight: 950;
   }
 
   .faq {
     margin-top: 3rem;
-    border: 1px solid #ddd6cc;
+    border: 2px solid #17191c;
     padding: clamp(1.2rem, 3vw, 2rem);
+    box-shadow: 6px 6px 0 #17191c;
   }
 
   details {
-    border-top: 1px solid #ddd6cc;
+    border-top: 1px solid rgba(23, 25, 28, 0.22);
     padding: 1rem 0;
   }
 
   summary {
     cursor: pointer;
-    color: #17120e;
+    color: #17191c;
     font-weight: 950;
   }
 
@@ -218,8 +222,9 @@ const yearlyUrl = yearly.purchaseUrl || '/checkout?tier=yearly_maintenance';
     justify-content: space-between;
     gap: 1rem;
     margin-top: 1.2rem;
-    border: 1px solid #ddd6cc;
+    border: 2px solid #17191c;
     padding: clamp(1.2rem, 3vw, 2rem);
+    box-shadow: 6px 6px 0 #17191c;
   }
 
   .cta-panel a {
