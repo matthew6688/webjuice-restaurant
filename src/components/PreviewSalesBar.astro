@@ -41,6 +41,7 @@ function buildOfficialUrl(tier: any, fallbackTier: string) {
     data-client-slug={clientSlug}
     data-repo={repo}
     data-preview-url={previewUrl}
+    data-funnel-origin={funnelOrigin}
   >
     <div class="preview-sales-inner">
       <a class="preview-sales-copy" href="https://profitslocal.com/" target="_blank" rel="noreferrer" aria-label="Open ProfitsLocal website">
@@ -87,6 +88,7 @@ function buildOfficialUrl(tier: any, fallbackTier: string) {
     const clientSlug = bar.getAttribute('data-client-slug') || params.get('client_slug') || '';
     const repo = bar.getAttribute('data-repo') || params.get('repo') || '';
     const previewUrl = bar.getAttribute('data-preview-url') || window.location.origin;
+    const funnelOrigin = bar.getAttribute('data-funnel-origin') || 'https://profitslocal.com';
     if (orderId && email) {
       const shared = new URLSearchParams({
         order_id: orderId,
@@ -105,13 +107,13 @@ function buildOfficialUrl(tier: any, fallbackTier: string) {
       const domain = bar.querySelector('[data-domain-link]');
       if (title) title.textContent = 'Review controls';
       if (subtitle) subtitle.textContent = 'Approve or request changes from this dev preview';
-      if (approve) approve.setAttribute('href', `/approve?${shared.toString()}`);
-      if (revise) revise.setAttribute('href', `/revise?${shared.toString()}`);
-      if (domain) domain.setAttribute('href', `/domain-setup?${shared.toString()}`);
+      if (approve) approve.setAttribute('href', `${funnelOrigin}/approve?${shared.toString()}`);
+      if (revise) revise.setAttribute('href', `${funnelOrigin}/revision?${shared.toString()}`);
+      if (domain) domain.setAttribute('href', `${funnelOrigin}/domain-setup?${shared.toString()}`);
       if (extra) {
         const extraParams = new URLSearchParams(shared);
         extraParams.set('tier', 'extra_revision');
-        extra.setAttribute('href', `/checkout?${extraParams.toString()}`);
+        extra.setAttribute('href', `${funnelOrigin}/checkout?${extraParams.toString()}`);
       }
       fetch('/api/order-status/', {
         method: 'POST',
