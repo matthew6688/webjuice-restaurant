@@ -10,14 +10,27 @@ const hidden = checkout.hiddenFields || {};
 const clientSlug = hidden.client_slug || checkout.clientSlug || '';
 const repo = hidden.repo || '';
 const previewUrl = hidden.preview_url || '';
+const funnelOrigin = hidden.funnel_origin || 'https://profitslocal.com';
 const infoParams = new URLSearchParams({
   client_slug: clientSlug,
   repo,
   preview_url: previewUrl,
+  template: hidden.template || 'webjuice-restaurant',
+  campaign_id: hidden.campaign_id || 'demo-preview',
+  currency: hidden.currency || checkout.currency || 'USD',
 });
-const faqUrl = `/demo-faq?${infoParams.toString()}`;
-const faqAnchorUrl = `/demo-faq?${infoParams.toString()}#questions`;
-const contactUrl = `/contact-us?${infoParams.toString()}`;
+const faqUrl = `${funnelOrigin}/checkout?${infoParams.toString()}`;
+const faqAnchorUrl = `${funnelOrigin}/checkout?${infoParams.toString()}#faq`;
+const contactUrl = `${funnelOrigin}/contact?${infoParams.toString()}`;
+const oneTimeUrl = buildOfficialUrl(oneTime, 'one_time');
+const yearlyUrl = buildOfficialUrl(yearly, 'yearly_maintenance');
+
+function buildOfficialUrl(tier: any, fallbackTier: string) {
+  const params = new URLSearchParams(infoParams);
+  params.set('tier', tier?.id || fallbackTier);
+  if (tier?.amount) params.set('amount', String(tier.amount));
+  return `${funnelOrigin}/checkout?${params.toString()}`;
+}
 ---
 
 {hasSalesBar && (
@@ -35,13 +48,13 @@ const contactUrl = `/contact-us?${infoParams.toString()}`;
       </a>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
         {oneTime?.purchaseUrl && (
-          <a class="preview-sales-plan preview-sales-plan-featured" href={oneTime.purchaseUrl} target="_blank" data-sales-mode>
+          <a class="preview-sales-plan preview-sales-plan-featured" href={oneTimeUrl} target="_blank" data-sales-mode>
             <span>${oneTime.amount} one-time</span>
             <small>3 revisions + hosting + subdomain</small>
           </a>
         )}
         {yearly?.purchaseUrl && (
-          <a class="preview-sales-plan" href={yearly.purchaseUrl} target="_blank" data-sales-mode>
+          <a class="preview-sales-plan" href={yearlyUrl} target="_blank" data-sales-mode>
             <span>${yearly.amount}/year</span>
             <small>12 revisions + maintenance + SEO</small>
           </a>
@@ -49,7 +62,7 @@ const contactUrl = `/contact-us?${infoParams.toString()}`;
         <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
         <a class="preview-sales-link" href={faqAnchorUrl} data-sales-mode>FAQ</a>
         <a class="preview-sales-link" href={contactUrl} data-sales-mode>Contact</a>
-        <a class="preview-sales-checkout" href={oneTime?.purchaseUrl || yearly?.purchaseUrl || faqUrl} target="_blank" data-sales-mode>Checkout</a>
+        <a class="preview-sales-checkout" href={oneTimeUrl || yearlyUrl || faqUrl} target="_blank" data-sales-mode>Checkout</a>
         <a class="preview-sales-plan preview-sales-plan-featured is-hidden" href="/approve" data-order-mode data-approve-link>
           <span>Approve site</span>
           <small>publish live</small>
