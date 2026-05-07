@@ -29,8 +29,11 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
   >
     <div class="preview-sales-inner">
       <div class="preview-sales-copy">
-        <strong data-sales-title>Preview ready</strong>
-        <span data-sales-subtitle>Review the offer, then claim this site</span>
+        <span class="preview-sales-brand">ProfitsLocal</span>
+        <div>
+          <strong data-sales-title>Website preview ready</strong>
+          <span data-sales-subtitle>Review the offer, then claim this site</span>
+        </div>
       </div>
       <nav class="preview-sales-actions" aria-label="Preview purchase and feedback links">
         <a class="preview-sales-link" href={faqUrl} data-sales-mode>How it works</a>
@@ -117,54 +120,80 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
 
 <style>
   :global(body:has(.preview-sales-bar)) {
-    padding-bottom: 76px;
+    padding-bottom: 88px;
   }
 
   .preview-sales-bar {
     position: fixed;
-    z-index: 60;
+    z-index: 80;
     right: 0;
     bottom: 0;
     left: 0;
-    padding: 0.55rem;
+    padding: 0.85rem;
     background: transparent;
-    color: #17120e;
+    color: #17191c;
     pointer-events: none;
   }
 
   .preview-sales-inner {
     display: flex;
-    max-width: 900px;
-    min-height: 56px;
+    max-width: 1040px;
+    min-height: 64px;
     align-items: center;
     justify-content: space-between;
-    gap: 0.8rem;
+    gap: 1rem;
     margin: 0 auto;
-    border: 1px solid rgba(23, 18, 14, 0.12);
-    border-radius: 999px;
-    padding: 0.46rem;
-    background: rgba(255, 253, 248, 0.92);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 18px 55px rgba(23, 18, 14, 0.2);
+    border: 1px solid rgba(23, 25, 28, 0.12);
+    border-radius: 26px;
+    padding: 0.62rem;
+    background:
+      linear-gradient(135deg, rgba(255, 246, 236, 0.96), rgba(255, 252, 247, 0.94)),
+      #fff6ec;
+    backdrop-filter: blur(20px);
+    box-shadow:
+      0 20px 70px rgba(23, 25, 28, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
     pointer-events: auto;
   }
 
   .preview-sales-copy {
-    display: grid;
+    display: flex;
     min-width: 0;
-    gap: 0.15rem;
+    align-items: center;
+    gap: 0.85rem;
+    padding-left: 0.55rem;
+  }
+
+  .preview-sales-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border-right: 1px solid rgba(23, 25, 28, 0.14);
+    padding-right: 0.9rem;
+    color: #17191c;
+    font-family: Playfair Display, Georgia, serif;
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
   }
 
   .preview-sales-copy strong {
-    font-size: 0.9rem;
-    font-weight: 900;
+    display: block;
+    color: #17191c;
+    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 850;
     line-height: 1.1;
   }
 
   .preview-sales-copy span {
-    color: #6d6258;
+    color: #5e6268;
+    display: block;
+    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 720;
     line-height: 1.25;
   }
 
@@ -178,10 +207,11 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
   .preview-sales-button,
   .preview-sales-link {
     display: inline-flex;
-    min-height: 42px;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
+    border-radius: 16px;
+    font-family: Inter, Manrope, ui-sans-serif, system-ui, sans-serif;
     text-decoration: none;
     white-space: nowrap;
   }
@@ -192,49 +222,62 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
 
   .preview-sales-button {
     gap: 0.32rem;
-    border: 1px solid rgba(23, 18, 14, 0.16);
-    padding: 0.45rem 0.82rem;
-    background: #17120e;
-    color: #fffdf8;
+    border: 1px solid rgba(23, 25, 28, 0.14);
+    padding: 0.48rem 0.9rem;
+    background: #17191c;
+    color: #fffcf7;
+    box-shadow: 0 10px 24px rgba(23, 25, 28, 0.14);
   }
 
   .preview-sales-primary {
-    background: #b9802f;
-    border-color: #b9802f;
+    background: #ff5a3d;
+    border-color: #ff5a3d;
+    color: #17191c;
+    box-shadow: 0 12px 30px rgba(255, 90, 61, 0.28);
   }
 
   .preview-sales-button span {
     font-size: 0.86rem;
-    font-weight: 950;
+    font-weight: 900;
     line-height: 1;
   }
 
   .preview-sales-button small {
     font-size: 0.66rem;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1;
+    opacity: 0.86;
   }
 
   .preview-sales-link {
-    min-height: 38px;
-    padding: 0.42rem 0.6rem;
-    color: #17120e;
+    min-height: 42px;
+    border: 1px solid transparent;
+    padding: 0.42rem 0.7rem;
+    color: #17191c;
     font-size: 0.76rem;
-    font-weight: 900;
-    text-decoration: underline;
-    text-underline-offset: 4px;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .preview-sales-link:hover {
+    border-color: rgba(23, 25, 28, 0.13);
+    background: rgba(255, 252, 247, 0.82);
   }
 
   @media (max-width: 680px) {
     :global(body:has(.preview-sales-bar)) {
-      padding-bottom: 104px;
+      padding-bottom: 96px;
+    }
+
+    .preview-sales-bar {
+      padding: 0.62rem;
     }
 
     .preview-sales-inner {
-      min-height: 54px;
+      min-height: 58px;
       align-items: center;
       gap: 0.55rem;
-      border-radius: 999px;
+      border-radius: 22px;
       overflow: hidden;
     }
 
@@ -251,7 +294,7 @@ const faqUrl = `/demo-faq?${infoParams.toString()}`;
 
     .preview-sales-button {
       flex: 0 0 auto;
-      min-height: 40px;
+      min-height: 42px;
       padding-inline: 0.76rem;
     }
 
